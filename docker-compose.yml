@@ -1,0 +1,149 @@
+version: '3.8'
+
+services:
+  mysql_auth:    
+    image: mysql:8.0
+    container_name: auth_db
+    environment:
+      MYSQL_ROOT_PASSWORD: tk5D<7,76+T-
+      MYSQL_DATABASE: auth_db
+    ports:
+      - "3010:3306"
+    volumes:
+      - auth_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  mysql_report:
+    image: mysql:8.0
+    container_name: report_db
+    environment:
+      MYSQL_ROOT_PASSWORD: 19a5FndQdhx{
+      MYSQL_DATABASE: report_db
+    ports:
+      - "3020:3306"
+    volumes:
+      - report_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  mysql_geo:
+    image: mysql:8.0
+    container_name: geo_db
+    environment:
+      MYSQL_ROOT_PASSWORD: U"7Wc*75H7P!
+      MYSQL_DATABASE: geo_db
+    ports:
+      - "3030:3306"
+    volumes:
+      - geo_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+  mysql_admin:
+    image: mysql:8.0
+    container_name: admin_db
+    environment:
+      MYSQL_ROOT_PASSWORD: s*2@W[85sC56
+      MYSQL_DATABASE: admin_db
+    ports:
+      - "3040:3306"
+    volumes:
+      - admin_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  mysql_fileStorage:
+    image: mysql:8.0
+    container_name: fileStorage_db
+    environment:
+      MYSQL_ROOT_PASSWORD: 6+V5Kldt5t'S
+      MYSQL_DATABASE: fileStorage_db
+    ports:
+      - "3050:3306"
+    volumes:
+      - fileStorage_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  mysql_voting:
+    image: mysql:8.0
+    container_name: voting_db
+    environment:
+      MYSQL_ROOT_PASSWORD: I_i-|3}n09%S
+      MYSQL_DATABASE: voting_db
+    ports:
+      - "3060:3306"
+    volumes:
+      - voting_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  mysql_notification:
+    image: mysql:8.0
+    container_name: notification_db
+    environment:
+      MYSQL_ROOT_PASSWORD: -dCQZ1?$B87z
+      MYSQL_DATABASE: notification_db
+    ports:
+      - "3070:3306"
+    volumes:
+      - notification_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  mysql_integration:
+    image: mysql:8.0
+    container_name: integration_db
+    environment:
+      MYSQL_ROOT_PASSWORD: /zRd1MW6:9\9
+      MYSQL_DATABASE: integration_db
+    ports:
+      - "3080:3306"
+    volumes:
+      - integration_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000" # Minio API port
+      - "9001:9001" # Minio Console port
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword1234@
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+		
