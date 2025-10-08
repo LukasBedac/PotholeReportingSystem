@@ -1,40 +1,109 @@
 version: '3.8'
 
 services:
-  backend-api:
-    build:
-      context: ./backend
+
+  # =================================================================
+  # 1. REPORTS SERVICE a jeho DB
+  # =================================================================
+  reports-service:
+    build: 
+      context: ./services/reports # Predpokladá adresár ./services/reports/ s Dockerfile
       dockerfile: Dockerfile
-    container_name: pothole_backend_api
+    container_name: pothole_reports_service
     ports:
       - "8080:8080"
     environment:
-      DB_HOST: postgres_db
-      DB_PORT: 5432
-      DB_USER: pothole_user
-      DB_PASSWORD: super_secret_password
-      DB_NAME: pothole_db
+      # Pripojenie na VLASTNÚ DB (mysql_reports_db)
+      DB_HOST: mysql_reports_db
+      DB_PORT: 3306
+      DB_USER: reports_user
+      DB_PASSWORD: reports_password
+      DB_NAME: reports_db
+      # Pripojenie k zdie¾anému MinIO
       MINIO_ENDPOINT: minio_storage:9000
       MINIO_ACCESS_KEY: minio_user
       MINIO_SECRET_KEY: minio_password_123
       MINIO_BUCKET: reports-media
-      NODE_ENV: development
     depends_on:
-      - postgres_db
+      - mysql_reports_db
       - minio_storage
-
-  postgres_db:
-    image: postgres:15-alpine
-    container_name: pothole_postgres_db
+      
+  mysql_reports_db:
+    image: mysql:8.0
+    container_name: pothole_mysql_reports_db
     environment:
-      POSTGRES_USER: pothole_user
-      POSTGRES_PASSWORD: super_secret_password
-      POSTGRES_DB: pothole_db
+      MYSQL_ROOT_PASSWORD: root_password_reports
+      MYSQL_DATABASE: reports_db
+      MYSQL_USER: reports_user
+      MYSQL_PASSWORD: reports_password
     volumes:
-      - pothole_db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - mysql_reports_data:/var/lib/mysql
 
+  # =================================================================
+  # 2. USERS SERVICE a jeho DB
+  # =================================================================
+  users-service:
+    build: 
+      context: ./services/users # Predpokladá adresár ./services/users/ s Dockerfile
+      dockerfile: Dockerfile
+    container_name: pothole_users_service
+    ports:
+      - "8081:8081"
+    environment:
+      # Pripojenie na VLASTNÚ DB (mysql_users_db)
+      DB_HOST: mysql_users_db
+      DB_PORT: 3306
+      DB_USER: users_user
+      DB_PASSWORD: users_password
+      DB_NAME: users_db
+    depends_on:
+      - mysql_users_db
+      
+  mysql_users_db:
+    image: mysql:8.0
+    container_name: pothole_mysql_users_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_users
+      MYSQL_DATABASE: users_db
+      MYSQL_USER: users_user
+      MYSQL_PASSWORD: users_password
+    volumes:
+      - mysql_users_data:/var/lib/mysql
+
+  # =================================================================
+  # 3. ADMIN SERVICE a jeho DB
+  # =================================================================
+  admin-service:
+    build: 
+      context: ./services/admin # Predpokladá adresár ./services/admin/ s Dockerfile
+      dockerfile: Dockerfile
+    container_name: pothole_admin_service
+    ports:
+      - "8082:8082"
+    environment:
+      # Pripojenie na VLASTNÚ DB (mysql_admin_db)
+      DB_HOST: mysql_admin_db
+      DB_PORT: 3306
+      DB_USER: admin_user
+      DB_PASSWORD: admin_password
+      DB_NAME: admin_db
+    depends_on:
+      - mysql_admin_db
+      
+  mysql_admin_db:
+    image: mysql:8.0
+    container_name: pothole_mysql_admin_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_admin
+      MYSQL_DATABASE: admin_db
+      MYSQL_USER: admin_user
+      MYSQL_PASSWORD: admin_password
+    volumes:
+      - mysql_admin_data:/var/lib/mysql
+      
+  # =================================================================
+  # 4. ÚLOŽISKO SÚBOROV (MinIO)
+  # =================================================================
   minio_storage:
     image: minio/minio:latest
     container_name: pothole_minio_storage
@@ -52,4 +121,11 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-      start_period: 10
+      start_period: 10s
+
+# Definovanie trvalých úložísk dát
+volumes:
+  mysql_reports_data:
+  mysql_users_data:
+  mysql_admin_data:
+  pothole_minio_data:

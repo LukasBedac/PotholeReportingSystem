@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+
+  # 1. ZDIEºAN¡ DATAB¡ZA PRE VäETKY MIKROSLUéBY (JEDNA INäTANCIA)
+  mysql_shared_db:
+    image: mysql:8.0
+    container_name: pothole_mysql_shared_db
+    # Port mapovan˝ pre æahk˝ prÌstup z hostiteæa
+    ports:
+      - "3306:3306"
+    environment:
+      # Tieto s˙ credentials pre ROOT prÌstup. Kaûd· sluûba si vytvorÌ svoju schÈmu.
+      MYSQL_ROOT_PASSWORD: shared_root_password
+    volumes:
+      - mysql_shared_data:/var/lib/mysql
+
+  # =================================================================
+  # 2. REPORTS SERVICE (Pripojenie na ZDIEºAN⁄ DB, ale s reports_schema)
+  # =================================================================
+  reports-service:
+    build: 
+      context: ./services/reports
+      dockerfile: Dockerfile
+    container_name: pothole_reports_service
+    ports:
+      - "8080:8080"
+    environment:
+      # Pripojenie na zdieæan˙ DB (mysql_shared_db)
+      DB_HOST: mysql_shared_db
+      DB_PORT: 3306
+      DB_USER: shared_db_user # SpoloËn˝ uûÌvateæ pre vöetky sluûby (pre jednoduchosù)
+      DB_PASSWORD: shared_db_password
+      DB_NAME: reports_schema # Kaûd· sluûba m· svoju schÈmu
+      # MinIO ost·va ako predt˝m
+      MINIO_ENDPOINT: minio_storage:9000
+      MINIO_ACCESS_KEY: minio_user
+      MINIO_SECRET_KEY: minio_password_123
+      MINIO_BUCKET: reports-media
+    depends_on:
+      - mysql_shared_db
+      - minio_storage
+      
+  # =================================================================
+  # 3. USERS SERVICE (Pripojenie na ZDIEºAN⁄ DB, ale s users_schema)
+  # =================================================================
+  users-service:
+    build: 
+      context: ./services/users
+      dockerfile: Dockerfile
+    container_name: pothole_users_service
+    ports:
+      - "8081:8081"
+    environment:
+      # Pripojenie na zdieæan˙ DB
+      DB_HOST: mysql_shared_db
+      DB_PORT: 3306
+      DB_USER: shared_db_user
+      DB_PASSWORD: shared_db_password
+      DB_NAME: users_schema
+    depends_on:
+      - mysql_shared_db
+      
+  # =================================================================
+  # 4. ADMIN SERVICE (Pripojenie na ZDIEºAN⁄ DB, ale s admin_schema)
+  # =================================================================
+  admin-service:
+    build: 
+      context: ./services/admin
+      dockerfile: Dockerfile
+    container_name: pothole_admin_service
+    ports:
+      - "8082:8082"
+    environment:
+      # Pripojenie na zdieæan˙ DB
+      DB_HOST: mysql_shared_db
+      DB_PORT: 3306
+      DB_USER: shared_db_user
+      DB_PASSWORD: shared_db_password
+      DB_NAME: admin_schema
+    depends_on:
+      - mysql_shared_db
+      
+  # 5. ⁄LOéISKO S⁄BOROV (MinIO)
+  minio_storage:
+    image: minio/minio:latest
+    container_name: pothole_minio_storage
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio_user
+      MINIO_ROOT_PASSWORD: minio_password_123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - pothole_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
+
+# Definovanie trval˝ch ˙loûÌsk d·t
+volumes:
+  mysql_shared_data: # Jedno volume pre cel˙ MySQL inötanciu
+  pothole_minio_data:
