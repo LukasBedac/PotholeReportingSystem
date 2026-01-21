@@ -1,0 +1,27 @@
+﻿@using GUIApps.Shared.Services.Interfaces
+@inject IAuthService AuthService
+<MudLayout>
+    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="height: 70vh;">
+        <MudPaper Elevation="8" Class="pa-8 d-flex flex-column align-center gap-4">
+
+            <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" Color="Color.Error" />
+
+            <MudText Typo="Typo.h5" Align="Align.Center">Access Denied</MudText>
+
+            <MudText Align="Align.Center" Color="Color.Surface">
+                You must log in to access this section.
+            </MudText>
+
+            <MudButton OnClick="AuthService.LoginAsync"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Size="Size.Large"
+                       Class="mt-4">
+                Login
+            </MudButton>
+        </MudPaper>
+    </MudContainer>
+</MudLayout>
+@code {
+
+}

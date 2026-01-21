@@ -1,0 +1,157 @@
+﻿@page "/profile"
+@using System.Security.Claims
+@using GUIApps.Models.Enums
+@using GUIApps.Shared.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-6">My Profile</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="3" Class="d-flex flex-column align-center pa-6">
+                    <MudAvatar Color="Color.Primary" Style="height:100px; width:100px; font-size:2rem;" Class="mb-4">
+                        @_initials
+                    </MudAvatar>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_username</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-4">@_email</MudText>
+
+                    <MudDivider Class="w-100 my-4" />
+                    <form method="post" action="/Account/Logout">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Logout"
+                                   ButtonType="ButtonType.Submit"
+                                   FullWidth="true">
+                            Logout
+                        </MudButton>
+                    </form>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudCard Elevation="3" Class="pa-6">
+                    <MudText Typo="Typo.h6" Class="mb-4">Account Details</MudText>
+
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField Label="Full Name"
+                                          Value="@_fullName"
+                                          ReadOnly="true"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Person" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField Label="Email Address"
+                                          Value="@_email"
+                                          ReadOnly="true"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Email" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField Label="User ID (Sub)"
+                                          Value="@_userId"
+                                          ReadOnly="true"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Fingerprint"
+                                          HelperText="Unique identifier from Keycloak" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Roles</MudText>
+                            <div class="d-flex gap-2 mt-1 flex-wrap">
+                                @foreach (var role in _roles)
+                                {
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@role</MudChip>
+                                }
+                                @if (!_roles.Any())
+                                {
+                                    <MudChip T="string" Color="Color.Surface" Size="Size.Small" Disabled="true">No Roles Assigned</MudChip>
+                                }
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+                </MudCard>
+            </MudItem>
+            @* <MudItem xs="12" md="8">
+                <MudCard>
+                    <MudItem>
+                        <MudTable T= title="User Reports" Hover=True>
+                            <HeaderCell></HeaderCell>
+                        </MudTable>
+                    </MudItem>
+                </MudCard>
+            </MudItem> *@
+        </MudGrid>
+    }
+</MudContainer>
+
+    @code {
+    private bool _isLoading = true;
+    private ClaimsPrincipal? _user;
+
+    // Display Fields
+    private string _fullName = "";
+    private string _username = "";
+    private string _email = "";
+    private string _initials = "";
+    private string _userId = "";
+    private List<string> _roles = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _user = authState.User;
+        if (_user.Identity?.IsAuthenticated == true)
+        {
+            // Extract Claims (Standard OIDC claim types)
+            _userId = _user.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                      _user.FindFirst("sub")?.Value ?? "Unknown ID";
+
+            _fullName = _user.FindFirst(ClaimTypes.Name)?.Value ??
+                        _user.FindFirst("name")?.Value ?? "Unknown";
+
+            _email = _user.FindFirst(ClaimTypes.Email)?.Value ??
+                     _user.FindFirst("email")?.Value ?? "No Email";
+
+            _username = _user.FindFirst("preferred_username")?.Value ?? _fullName;
+
+            // Extract Roles
+            // Keycloak often sends roles as "resource_access" or plain "role" claims depending on config.
+            // This grabs standard .NET role claims:
+            _roles = _user.FindAll("roles")
+                                         .Select(c => c.Value)
+                                         .Where(c => c.Equals("user") || c.Equals("admin"))
+                                         .Select(c => Enum.Parse<UserRole>(c, ignoreCase: true).ToString())
+                                         .ToList();
+
+            // Generate Initials for Avatar (e.g. "John Doe" -> "JD")
+            if (!string.IsNullOrWhiteSpace(_fullName))
+            {
+                var parts = _fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 0) _initials = parts[0][0].ToString();
+                if (parts.Length > 1) _initials += parts[1][0].ToString();
+            }
+        }
+
+        _isLoading = false;
+    }
+
+
+}

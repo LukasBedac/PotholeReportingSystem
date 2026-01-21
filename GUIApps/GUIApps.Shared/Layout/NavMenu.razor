@@ -1,0 +1,15 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using MudBlazor
+<MudNavMenu Style="margin-top: 10px; font-size: 16px">
+    <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">MENU</MudText>
+    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">All Reports</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Map"  Href="/map" Match="NavLinkMatch.Prefix">Map View</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Assignment"  Href="/counter" Match="NavLinkMatch.Prefix">My Reports</MudNavLink>
+
+    <MudDivider />
+
+    <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="ml-4 mb-4 mt-4">ACCOUNT</MudText>
+    <MudNavLink Icon="@Icons.Material.Filled.Settings" Href="/settings">Settings</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Rounded.Person2" Href="/profile" Match="NavLinkMatch.Prefix">Profile</MudNavLink>
+</MudNavMenu>
+

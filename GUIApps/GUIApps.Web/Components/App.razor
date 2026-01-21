@@ -1,0 +1,31 @@
+﻿@using GUIApps.Shared
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* <link rel="stylesheet" href="_content/GUIApps.Shared/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/GUIApps.Shared/app.css" />
+    <link rel="stylesheet" href="GUIApps.Web.styles.css" /> *@
+    <link rel="icon" type="image/png" href="_content/GUIApps.Shared/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" rel="stylesheet" />
+    <HeadContent>
+        <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    </HeadContent>
+    <HeadOutlet />
+</head>
+
+<body>
+    <CascadingAuthenticationState>
+        <Routes @rendermode="RenderMode.InteractiveAuto" />
+    </CascadingAuthenticationState>
+    <script src="_framework/blazor.web.js"></script>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+</body>
+
+</html>

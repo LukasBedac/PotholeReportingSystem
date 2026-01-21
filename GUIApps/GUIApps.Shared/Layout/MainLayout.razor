@@ -1,0 +1,120 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="4" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6">
+            Pothole Report System
+        </MudText>
+       
+        <MudSpacer />
+
+        <MudTextField @bind-Value="_searchString" Placeholder="Search requests..." Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Variant="Variant.Text"
+                      Margin="Margin.Normal" Class="flex-grow-1" Style="max-width: 300px; background:white; border-radius: 12px " MaxLines="3"
+                      Clearable="true"/>
+        <AuthorizeView>
+            <Authorized>
+                <MudText Typo="Typo.subtitle2"> @context.User.Identity?.Name</MudText>
+                <form method="post" action="/Account/Logout">
+                    <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" ButtonType="ButtonType.Submit"></MudIconButton>
+                </form>
+            </Authorized>
+            <NotAuthorized>
+                <MudText Typo="Typo.subtitle2"> Login</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" Edge="Edge.End"
+                ButtonType="ButtonType.Submit" Href="/Account/Login"></MudIconButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_open" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Responsive" Anchor="Anchor.Left">
+        <NavMenu></NavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" > @*This makes my maincontent shrink too much*@
+            @Body
+        </MudContainer>
+        <MudPaper Elevation="0" Square="true" Class="py-4 mt-8" Style="@($"border-top: 2px solid {Colors.Gray.Lighten1};")">
+            <MudContainer MaxWidth="MaxWidth.Large">
+                <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="4">
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/privacy">Privacy</MudLink>
+                    <MudText Color="Color.Default">·</MudText>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/terms">Terms</MudLink>
+                    <MudText Color="Color.Default">·</MudText>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/contact">Contact</MudLink>
+                    <MudText Color="Color.Default">·</MudText>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="#">About</MudLink>
+                </MudStack>
+
+                <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-2 text-muted">
+                    © @DateTime.Now.Year Pothole Report System
+                </MudText>
+            </MudContainer>
+        </MudPaper>
+    </MudMainContent>
+    @* <MudAppBar Bottom="true" Style="@($"background:{Colors.Gray.Lighten3};")" Dense="true">
+        <MudSpacer />
+        <MudStack Row="true" Justify="Justify.FlexEnd" Class="w-100">
+            <MudLink Color="Color.Primary" Href="/privacy">Privacy</MudLink>
+            <MudLink Color="Color.Primary" Href="/terms">Terms</MudLink>
+            <MudLink Color="Color.Primary" Href="/contact">Contact</MudLink>
+            <MudLink Color="Color.Primary" Href="https://learn.microsoft.com/aspnet/core/">About</MudLink>
+        </MudStack>
+    </MudAppBar> *@
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+</MudLayout>
+@code {
+    private bool _open = true;
+    private string _searchString = "";
+    private void ToggleDrawer()
+    {
+        _open = !_open;
+    }
+}
+
+@* <div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+                    <span style="display: flex; margin: 0,0,10,0">@context.User.Identity?.Name</span>
+                    <form method="post" action="/Account/Logout" style="margin-block: 10,0,0,0"> 
+                        <button type="submit">Logout</button>    
+                    </form>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/Account/Login">Login</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+        <div class="bottom-row px-4">
+            <a>This is a footer</a>
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div> *@
