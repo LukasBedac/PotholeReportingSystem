@@ -12,6 +12,13 @@ services:
       MYSQL_PASSWORD: shared_db_password
     volumes:
       - mysql_shared_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.0
@@ -27,6 +34,12 @@ services:
       KC_HTTP_ENABLED: "true"
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;cat <&3 | grep -q \"200 OK\""]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     volumes:
       - ./keycloak_data_backup:/opt/keycloak/data/
 
@@ -34,6 +47,10 @@ services:
     image: minio/minio:latest
     container_name: pothole_minio_storage
     command: server /data --console-address ":9001"
+    networks:
+      default:
+        aliases:
+          - minio
     environment:
       MINIO_ROOT_USER: minio_user
       MINIO_ROOT_PASSWORD: minio_password_123
@@ -51,8 +68,8 @@ services:
 
   admin-service:
     build: 
-      context: ../Application/AdminService
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: Application/AdminService/Dockerfile
     container_name: pothole_admin_service
     ports:
       - "8083:80"
@@ -63,12 +80,13 @@ services:
       DB_PASSWORD: shared_db_password
       DB_NAME: admin_schema
     depends_on:
-      - mysql_shared_db
+      mysql_shared_db:
+        condition: service_healthy
 
   reports-service:
     build: 
-      context: ../Application/Report&VoteService
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: Application/Report&VoteService/Dockerfile
     container_name: pothole_reports_service
     ports:
       - "8081:80"
@@ -78,29 +96,17 @@ services:
       DB_USER: shared_db_user
       DB_PASSWORD: shared_db_password
       DB_NAME: reports_schema
-      MINIO_ENDPOINT: minio_storage:9000
+      MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: minio_user
       MINIO_SECRET_KEY: minio_password_123
-      MINIO_BUCKET: reports-media
+      MINIO_BUCKET: images
     depends_on:
-      - mysql_shared_db
-      - minio_storage
-
-  users-service:
-    build: 
-      context: ../Application/AdminService
-      dockerfile: Dockerfile
-    container_name: pothole_users_service
-    ports:
-      - "8082:80"
-    environment:
-      DB_HOST: mysql_shared_db
-      DB_PORT: 3306
-      DB_USER: shared_db_user
-      DB_PASSWORD: shared_db_password
-      DB_NAME: users_schema
-    depends_on:
-      - mysql_shared_db
+      mysql_shared_db:
+        condition: service_healthy
+      minio_storage:
+        condition: service_healthy
+      filestorage-service:
+        condition: service_started
 
   auth-service:
     build:
@@ -116,23 +122,25 @@ services:
       DB_PASSWORD: shared_db_password
       DB_NAME: auth_schema
     depends_on:
-      - mysql_shared_db
+      mysql_shared_db:
+        condition: service_healthy
 
   filestorage-service:
     build:
-      context: ../Application/FileStorageService
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: Application/FileStorageService/Dockerfile
     container_name: pothole_filestorage_service
     ports:
-      - "8085:80"
+      - "8085:8080"
     environment:
-      MINIO_ENDPOINT: minio_storage:9000
+      MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: minio_user
       MINIO_SECRET_KEY: minio_password_123
+      MINIO_BUCKET: images
     depends_on:
       - minio_storage
 
-  geoservice:
+  geo-service:
     build:
       context: ../Application/GeoService
       dockerfile: Dockerfile
@@ -140,7 +148,8 @@ services:
     ports:
       - "8086:80"
     depends_on:
-      - mysql_shared_db
+      mysql_shared_db:
+        condition: service_healthy
 
   notification-service:
     build:
@@ -158,10 +167,10 @@ services:
     ports:
       - "8088:80"
 
-  web:
+  guiapps.web:
     build:
-      context: ../GUIApps
-      dockerfile: GUIApps.Web/Dockerfile
+      context: ..
+      dockerfile: GUIApps/GUIApps.Web/Dockerfile
     container_name: pothole_web
     ports:
       - "5000:80"
@@ -179,15 +188,22 @@ services:
       # Allow the app to find the metadata at keycloak:8080 while validating issuer as localhost:8080
       Oidc__RequireHttpsMetadata: "false"
     depends_on:
-      - keycloak
-      - auth-service
-      - users-service
-      - reports-service
-      - filestorage-service
-      - geoservice
-      - admin-service
-      - notification-service
-      - integration-service
+      keycloak:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      reports-service:
+        condition: service_started
+      filestorage-service:
+        condition: service_started
+      geo-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      integration-service:
+        condition: service_started
 
 volumes:
  mysql_shared_data:

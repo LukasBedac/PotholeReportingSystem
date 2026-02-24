@@ -1,0 +1,240 @@
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: pothole_zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: pothole_kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  mysql_shared_db:
+    image: mysql:8.0
+    container_name: pothole_database
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: shared_root_password
+      MYSQL_DATABASE: shared_db
+      MYSQL_USER: shared_db_user
+      MYSQL_PASSWORD: shared_db_password
+    volumes:
+      - mysql_shared_data:/var/lib/mysql
+      - ./Infra/mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    container_name: pothole_keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # Essential for running behind a reverse proxy or in docker network mixed with localhost access
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # Keycloak minimal image doesn't have curl, use bash TCP check to see if port 8080 is open
+      test: ["CMD-SHELL", "/bin/bash -c '>/dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    volumes:
+      - ./Infra/keycloak_data_backup:/opt/keycloak/data/
+
+  minio_storage:
+    image: minio/minio:latest
+    container_name: pothole_minio_storage
+    command: server /data --console-address ":9001"
+    networks:
+      default:
+        aliases:
+          - minio
+    environment:
+      MINIO_ROOT_USER: minio_user
+      MINIO_ROOT_PASSWORD: minio_password_123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - pothole_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
+
+  admin-service:
+    build: 
+      context: .
+      dockerfile: Application/AdminService/Dockerfile
+    container_name: pothole_admin_service
+    ports:
+      - "8083:8080"
+    environment:
+      DB_HOST: mysql_shared_db
+      DB_PORT: 3306
+      DB_USER: shared_db_user
+      DB_PASSWORD: shared_db_password
+      DB_NAME: admin_schema
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      mysql_shared_db:
+        condition: service_healthy
+
+  reports-service:
+    build: 
+      context: .
+      dockerfile: Application/Report&VoteService/Dockerfile
+    container_name: pothole_reports_service
+    ports:
+      - "8081:8080"
+    environment:
+      DB_HOST: mysql_shared_db
+      DB_PORT: 3306
+      DB_USER: shared_db_user
+      DB_PASSWORD: shared_db_password
+      DB_NAME: reports_schema
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minio_user
+      MINIO_SECRET_KEY: minio_password_123
+      MINIO_BUCKET: images
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      mysql_shared_db:
+        condition: service_healthy
+      minio_storage:
+        condition: service_healthy
+
+  auth-service:
+    build:
+      context: Application/AuthService
+      dockerfile: Dockerfile
+    container_name: pothole_auth_service
+    ports:
+      - "8084:8080"
+    environment:
+      DB_HOST: mysql_shared_db
+      DB_PORT: 3306
+      DB_USER: shared_db_user
+      DB_PASSWORD: shared_db_password
+      DB_NAME: auth_schema
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      mysql_shared_db:
+        condition: service_healthy
+
+  filestorage-service:
+    build:
+      context: .
+      dockerfile: Application/FileStorageService/Dockerfile
+    container_name: pothole_filestorage_service
+    ports:
+      - "8085:8080"
+    environment:
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minio_user
+      MINIO_SECRET_KEY: minio_password_123
+      MINIO_BUCKET: images
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - minio_storage
+
+  geo-service:
+    build:
+      context: Application/GeoService
+      dockerfile: Dockerfile
+    container_name: pothole_geoservice
+    ports:
+      - "8086:8080"
+    depends_on:
+      mysql_shared_db:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: Application/NotificationService
+      dockerfile: Dockerfile
+    container_name: pothole_notification_service
+    ports:
+      - "8087:8080"
+
+
+  integration-service:
+    build:
+      context: Application/IntegrationService
+      dockerfile: Dockerfile
+    container_name: pothole_integration_service
+    ports:
+      - "8088:8080"
+
+
+  guiapps.web:
+    build:
+      context: .
+      dockerfile: GUIApps/GUIApps.Web/Dockerfile
+    container_name: pothole_web
+    ports:
+      - "5000:80"
+    environment:
+      ASPNETCORE_URLS: http://+:80
+      ASPNETCORE_ENVIRONMENT: Development
+      # Connect to Keycloak running in the Docker network
+      # We use localhost here because the metadata will return localhost (due to KC_HOSTNAME=localhost)
+      # and we want them to match. Our custom DockerInternalNetworkHandler in Program.cs
+      # will rewrite the actual network request to "keycloak:8080".
+      Oidc__Authority: "http://localhost:8080/realms/PotholeReportSystem"
+      Oidc__ClientId: "pothole-web"
+      # The token issuer is localhost (as seen by browser and configured in KC_HOSTNAME)
+      Oidc__ValidIssuer: "http://localhost:8080/realms/PotholeReportSystem"
+      # Allow the app to find the metadata at keycloak:8080 while validating issuer as localhost:8080
+      Oidc__RequireHttpsMetadata: "false"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      reports-service:
+        condition: service_started
+      filestorage-service:
+        condition: service_started
+      geo-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      integration-service:
+        condition: service_started
+
+volumes:
+ mysql_shared_data:
+ pothole_minio_data:
