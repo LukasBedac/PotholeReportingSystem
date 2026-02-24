@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationService", "Appli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "Application\NotificationService\NotificationService.csproj", "{6E2B806C-D3A9-1060-16F2-F1E3C3D9296C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Report&VoteService", "Application\Report&VoteService\Report&VoteService.csproj", "{93BB3760-17C6-877A-DFD0-07486EA3B8D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportVoteService", "Application\Report&VoteService\ReportVoteService.csproj", "{93BB3760-17C6-877A-DFD0-07486EA3B8D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
@@ -25,7 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
+		Infra\docker-compose.yml = Infra\docker-compose.yml
 		Infra\docker-compose_schemas.yml = Infra\docker-compose_schemas.yml
+		Infra\mysql-init\init.sql = Infra\mysql-init\init.sql
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUIApps", "GUIApps\GUIApps\GUIApps.csproj", "{65314D4A-0BA9-472E-A988-1F4CD7867C78}"
@@ -39,6 +41,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GUI", "GUI", "{BAC251F0-7175-4A0E-BDEA-C3FAC8826DC5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{F1F4E807-6E29-4A41-9BB6-AE0E11F61A9A}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +95,10 @@ Global
 		{A5AA5430-B29A-4A80-99D2-BEBC98C1D704}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5AA5430-B29A-4A80-99D2-BEBC98C1D704}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5AA5430-B29A-4A80-99D2-BEBC98C1D704}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

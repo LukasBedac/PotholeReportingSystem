@@ -1,0 +1,382 @@
+﻿@page "/createreport"
+
+@using GUIApps.Shared.HelperMethods
+@using GUIApps.Shared.Models
+@using GUIApps.Shared.Models.Enums
+@using GUIApps.Shared.Pages
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Create Report</PageTitle>
+
+<MudLayout>
+    <MudContainer MaxWidth="MaxWidth.Large">
+
+        <MudPaper Class="pa-6 mt-6" Elevation="1">
+            <MudText Typo="Typo.h5" Class="mb-4">Create report</MudText>
+
+            <MudForm @ref="_form">
+                <MudGrid Spacing="3">
+
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">Photo (mandatory)</MudText>
+
+                        <MudFileUpload T="IBrowserFile" FilesChanged="OnFilesChangedAsync" Accept="image/*" MaxFiles="1">
+                            <ActivatorContent>
+                                <MudPaper Class="pa-6 d-flex flex-column align-center justify-center" Style="border:2px dashed var(--mud-palette-lines-default); min-height: 140px;">
+                                    <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Class="mb-2" />
+                                    <MudText Typo="Typo.body1">Drag &amp; drop photo here, or click to select</MudText>
+                                    @if (!string.IsNullOrWhiteSpace(_selectedFileName))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-2">Selected: @_selectedFileName</MudText>
+                                    }
+                                </MudPaper>
+                            </ActivatorContent>
+                        </MudFileUpload>
+
+                        @if (!string.IsNullOrWhiteSpace(_photoError))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Error" Class="mt-2">@_photoError</MudText>
+                        }
+
+                        @if (_exifStatus is not null)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@_exifStatus</MudText>
+                        }
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Latitude" Variant="Variant.Outlined"
+                                      @bind-Value="_model.Latitude"
+                                      Disabled=false />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Longitude" Variant="Variant.Outlined"
+                                      @bind-Value="_model.LongTitude"
+                                      Disabled=false />
+                    </MudItem>
+
+                    @if (!_exifFound)
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                                GPS location was not found in the photo. Please fill in location fields below.
+                            </MudAlert>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="4">
+                            <MudTextField Label="City" Variant="Variant.Outlined" @bind-Value="_mesto" Required="true" RequiredError="City is required" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField Label="Okres" Variant="Variant.Outlined" @bind-Value="_okres" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="4">
+                            <MudTextField Label="Obec" Variant="Variant.Outlined" @bind-Value="_obec" />
+                        </MudItem>
+
+                    }
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="PotholeCategory" Label="Category" Variant="Variant.Outlined"
+                                   @bind-Value="_model.Category" Required="true" RequiredError="Category is required">
+                            @foreach (var cat in Enum.GetValues<PotholeCategory>())
+                            {
+                                <MudSelectItem T="PotholeCategory" Value="cat">@cat</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="ReportStatus" Label="Status" Variant="Variant.Outlined"
+                                   @bind-Value="_model.Status" Disabled="true">
+                            @foreach (var st in Enum.GetValues<ReportStatus>())
+                            {
+                                <MudSelectItem T="ReportStatus" Value="st">@st</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-1">
+                            Status is set automatically for new reports.
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField Label="Description" Variant="Variant.Outlined" Lines="4"
+                                      @bind-Value="_model.Description" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">Photo metadata</MudText>
+
+                        <MudTextField Label="Original file name" Variant="Variant.Outlined" Disabled="true"
+                                      @bind-Value="_model.Image.OriginalName" />
+
+                        <MudTextField Label="Content type" Variant="Variant.Outlined" Disabled="true"
+                                      @bind-Value="_model.Image.ContentType" Class="mt-3" />
+
+                        <MudTextField Label="Size (bytes)" Variant="Variant.Outlined" Disabled="true"
+                                      @bind-Value="_imageSizeBytes" Class="mt-3" />
+
+                    </MudItem>
+
+                    <MudItem xs="12" Class="d-flex justify-end gap-2">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => ResetAsync())">Reset</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAsync">Submit</MudButton>
+                    </MudItem>
+
+                </MudGrid>
+            </MudForm>
+        </MudPaper>
+    </MudContainer>
+</MudLayout>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private MudForm? _form;
+
+    private IBrowserFile? _photo;
+    private string? _selectedFileName;
+    private string? _photoError;
+    private string? _exifStatus;
+    private bool _exifFound = false;
+
+    private string _okres = string.Empty;
+    private string _obec = string.Empty;
+    private string _mesto = string.Empty;
+
+    private Report _model = new()
+    {
+        UserID = string.Empty,
+        Status = ReportStatus.Reported,
+        ReportedAt = DateTime.UtcNow,
+        LastUpdatedAt = DateTime.UtcNow,
+        AssignedAdminID = null,
+        Image = new FileMinio()
+    };
+
+    private long _imageSizeBytes
+    {
+        get => _model.Image.SizeBytes;
+        set => _model.Image.SizeBytes = value;
+    }
+
+    private async Task SubmitAsync()
+    {
+        Console.WriteLine("SubmitAsync execution started.");
+
+        if (_form is null)
+        {
+            Console.WriteLine("SubmitAsync: Errors - Form reference is null.");
+            return;
+        }
+
+        if (_photo is null)
+        {
+            _photoError = "Photo is required.";
+            Console.WriteLine("SubmitAsync: Photo is null.");
+            Snackbar.Add("Photo is required.", Severity.Warning);
+            return;
+        }
+
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Console.WriteLine("SubmitAsync: Form is invalid.");
+            foreach (var err in _form.Errors)
+            {
+               Console.WriteLine($"Validation Error: {err}");
+            }
+            Snackbar.Add("Please correct the errors in the form.", Severity.Warning);
+            return;
+        }
+
+        if (!_exifFound)
+        {
+            if (string.IsNullOrWhiteSpace(_mesto))
+                return;
+            
+            _model.District = _okres;
+        }
+
+        var authState = AuthenticationStateTask is null ? null : await AuthenticationStateTask;
+        var userId = authState?.User?.FindFirst("sub")?.Value
+                     ?? authState?.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Snackbar.Add("Unable to identify user. Please try logging in again.", Severity.Error);
+            Console.WriteLine("SubmitAsync: UserID is missing.");
+            return;
+        }
+
+        _model.UserID = userId;
+        _model.ReportedAt = DateTime.UtcNow;
+        _model.LastUpdatedAt = DateTime.UtcNow;
+
+        Console.WriteLine($"Submitting report for User: {userId} at {DateTime.UtcNow}");
+
+        try
+        {
+            var fileClient = HttpClientFactory.CreateClient("FileService");
+            using var content = new MultipartFormDataContent();
+
+            using var fileStream = _photo.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);// Up to 10MB
+            using var streamContent = new StreamContent(fileStream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(_photo.ContentType);
+            content.Add(streamContent, "file", _photo.Name);
+
+            Console.WriteLine("Uploading file to FileService...");
+            var uploadResponse = await fileClient.PostAsync("Files/upload", content);
+            if (!uploadResponse.IsSuccessStatusCode)
+            {
+                var error = await uploadResponse.Content.ReadAsStringAsync();
+                _photoError = $"Upload failed: {uploadResponse.ReasonPhrase} - {error}";
+                Snackbar.Add($"Upload failed: {uploadResponse.ReasonPhrase}", Severity.Error);
+                Console.WriteLine($"FileService failed: {uploadResponse.StatusCode} - {error}");
+                return;
+            }
+
+            var uploadResult = await uploadResponse.Content.ReadFromJsonAsync<UploadResponseDto>();
+            if (uploadResult is not null)
+            {
+                Console.WriteLine($"File uploaded. Key: {uploadResult.StorageKey}");
+                _model.Image.StorageKey = uploadResult.StorageKey;
+                _model.Image.BucketName = uploadResult.BucketName;
+                _model.Image.OriginalName = uploadResult.OriginalName;
+                _model.Image.ContentType = uploadResult.ContentType;
+                _model.Image.SizeBytes = uploadResult.Size;
+                _model.Image.UploadedAt = DateTime.UtcNow;
+            }
+
+            Console.WriteLine("Sending report to ReportService...");
+            var reportClient = HttpClientFactory.CreateClient("ReportService");
+            var reportResponse = await reportClient.PostAsJsonAsync("Reports", _model);
+
+            if (reportResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Report submitted successfully.");
+                Snackbar.Add("Report submitted successfully!", Severity.Success);
+                await ResetAsync();
+            }
+            else
+            {
+                var errorMsg = await reportResponse.Content.ReadAsStringAsync();
+                Console.WriteLine($"ReportService failed: {reportResponse.StatusCode} - {errorMsg}");
+                Snackbar.Add($"Report failed: {errorMsg}", Severity.Error);
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception in SubmitAsync: {ex}");
+            _photoError = $"Error: {ex.Message}";
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private class UploadResponseDto
+    {
+        public string BucketName { get; set; } = "";
+        public string StorageKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string ContentType { get; set; } = "";
+        public long Size { get; set; }
+    }
+
+    private Task ResetAsync()
+    {
+        _photo = null;
+        _selectedFileName = null;
+        _photoError = null;
+        _exifStatus = null;
+        _okres = string.Empty;
+        _obec = string.Empty;
+        _mesto = string.Empty;
+
+        _model = new Report
+        {
+            UserID = string.Empty,
+            Status = ReportStatus.Reported,
+            ReportedAt = DateTime.UtcNow,
+            LastUpdatedAt = DateTime.UtcNow,
+            AssignedAdminID = null,
+            Image = new FileMinio()
+        };
+
+        return Task.CompletedTask;
+    }
+
+    private async Task OnFilesChangedAsync(IBrowserFile file)
+    {
+        _photoError = null;
+        _exifStatus = null;
+
+        if (file is null)
+        {
+            _photo = null;
+            _selectedFileName = null;
+            return;
+        }
+
+        _photo = file;
+        _selectedFileName = file.Name;
+
+        _model.Image.OriginalName = file.Name;
+        _model.Image.ContentType = file.ContentType;
+        _model.Image.SizeBytes = file.Size;
+
+        var gps = await TryExtractGpsAsync(file);
+        if (gps is not null)
+        {
+            _exifFound = true;
+            _model.Latitude = gps.Value.Lat;
+            _model.LongTitude = gps.Value.Lon;
+            _exifStatus = $"GPS extracted from photo: {_model.Latitude:F6}, {_model.LongTitude:F6}";
+        }
+        else
+        {
+            _exifFound = false;
+            _exifStatus = "No GPS EXIF data found.";
+        }
+    }
+
+    private static async Task<(double Lat, double Lon)?> TryExtractGpsAsync(IBrowserFile file)
+    {
+        try
+        {
+            // Heuristic: read the first chunk; EXIF is at the start for JPEG.
+            const long maxRead = 256 * 1024;
+            await using var stream = file.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            var buffer = new byte[16 * 1024];
+            long total = 0;
+            while (total < maxRead)
+            {
+                var toRead = (int)Math.Min(buffer.Length, maxRead - total);
+                var read = await stream.ReadAsync(buffer.AsMemory(0, toRead));
+                if (read <= 0)
+                    break;
+                await ms.WriteAsync(buffer.AsMemory(0, read));
+                total += read;
+            }
+
+            var data = ms.ToArray();
+
+            // Supports common JPEG EXIF with GPS IFD.
+            return ExifGpsParser.TryGetGps(data);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}

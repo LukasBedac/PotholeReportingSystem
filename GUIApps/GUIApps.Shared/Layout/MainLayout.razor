@@ -16,10 +16,11 @@
        
         <MudSpacer />
 
-        <MudTextField @bind-Value="_searchString" Placeholder="Search requests..." Adornment="Adornment.Start"
+        @* I was trying to build an global search but this will be probably scraped -> i do not see a real value in it for now*@
+        @* <MudTextField @bind-Value="_searchString" Placeholder="Search requests..." Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Variant="Variant.Text"
                       Margin="Margin.Normal" Class="flex-grow-1" Style="max-width: 300px; background:white;" MaxLines="3"
-                      Clearable="true"/>
+                      Clearable="true"/> *@
         <AuthorizeView>
             <Authorized>
                 <MudText Typo="Typo.subtitle2"> @context.User.Identity?.Name</MudText>
@@ -34,11 +35,11 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudAppBar>
-    <MudDrawer @bind-Open="@_open" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Responsive" Anchor="Anchor.Left">
+    <MudDrawer @bind-Open="@_open" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Responsive">
         <NavMenu></NavMenu>
     </MudDrawer>
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" > @*This makes my maincontent shrink too much*@
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
             @Body
         </MudContainer>
         <MudPaper Elevation="0" Square="true" Class="py-4 mt-8" Style="@($"border-top: 2px solid {Colors.Gray.Lighten1};")">

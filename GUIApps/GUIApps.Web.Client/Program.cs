@@ -22,5 +22,11 @@ builder.Services.AddScoped<GUIApps.Shared.Services.Interfaces.IAuthService, GUIA
 builder.Services.AddScoped<IAuthService, WebAuthService>();
 builder.Services.AddMudServices();
 
+// Register HttpClients for WebAssembly (accessing services via browser/localhost)
+builder.Services.AddHttpClient("FileService", client => 
+    client.BaseAddress = new Uri("http://localhost:8085"));
+builder.Services.AddHttpClient("ReportService", client => 
+    client.BaseAddress = new Uri("http://localhost:8081"));
+
 
 await builder.Build().RunAsync();

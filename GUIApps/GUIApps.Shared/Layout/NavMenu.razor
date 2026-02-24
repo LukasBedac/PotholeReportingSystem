@@ -1,14 +1,33 @@
-﻿@using Microsoft.AspNetCore.Components.Routing
+﻿@using GUIApps.Models.Enums
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
 @using MudBlazor
-<MudNavMenu Style="margin-top: 10px; font-size: 16px">
-    <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">MENU</MudText>
-    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">All Reports</MudNavLink>
-    <MudNavLink Icon="@Icons.Material.Filled.Map"  Href="/map" Match="NavLinkMatch.Prefix">Map View</MudNavLink>
-    <MudNavLink Icon="@Icons.Material.Filled.Assignment"  Href="/counter" Match="NavLinkMatch.Prefix">My Reports</MudNavLink>
 
+<MudNavMenu Style="margin-top: 10px; font-size: 16px">
+    <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">Menu</MudText>
+    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">All Reports</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Map"  Href="/mapview" Match="NavLinkMatch.Prefix">Map View</MudNavLink>
+    <AuthorizeView Roles="User, Admin, user, admin">
+        <Authorized>
+            <MudDivider />
+            <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">User Actions</MudText>
+            <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="/myreports" Match="NavLinkMatch.Prefix">My Reports</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.AddCircle" Href="/createreport" Match="NavLinkMatch.Prefix">Create Report</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Roles="Admin, admin">
+        <Authorized>
+            <MudDivider />
+            <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">Admin Actions</MudText>
+
+            <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="/admin/manage-reports" Match="NavLinkMatch.Prefix">Edit Reports</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Group" Href="/admin/manage-users" Match="NavLinkMatch.Prefix">Manage Users</MudNavLink>
+
+        </Authorized>
+    </AuthorizeView>
     <MudDivider />
 
-    <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="ml-4 mb-4 mt-4">ACCOUNT</MudText>
+    <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="ml-4 mb-4 mt-4">Account</MudText>
     <MudNavLink Icon="@Icons.Material.Filled.Settings" Href="/settings">Settings</MudNavLink>
     <MudNavLink Icon="@Icons.Material.Rounded.Person2" Href="/profile" Match="NavLinkMatch.Prefix">Profile</MudNavLink>
 </MudNavMenu>

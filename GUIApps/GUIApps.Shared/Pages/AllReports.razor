@@ -1,0 +1,303 @@
+﻿@page "/"
+@using MudBlazor
+@using GUIApps.Shared.Models
+@using GUIApps.Shared.Models.Enums
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudLayout>
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-12">
+        <MudGrid>
+            <MudItem xs="12" md="3" lg="2">
+                <MudPaper Class="pa-4 rounded-lg" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">Filters</MudText>
+                    
+                    <MudText Typo="Typo.subtitle2" Class="mb-1" Color="Color.Secondary">Search</MudText>
+                    <MudTextField @bind-Value="_searchString" Placeholder="Keywords..." Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" TextChanged="OnFilterChanged" Immediate="true" />
+                    
+                    <MudDivider Class="my-4"/>
+
+                    <MudText Typo="Typo.subtitle2" Class="mb-1" Color="Color.Secondary">Status</MudText>
+                    <MudList T="string" Dense="true" Clickable="false" DisablePadding="true">
+                         @foreach(var status in Enum.GetValues<ReportStatus>())
+                         {
+                             <MudListItem>
+                                 <MudCheckBox T="bool" Label="@status.ToString()" Value="@_selectedStatuses.Contains(status)" ValueChanged="@((bool v) => ToggleStatus(status, v))" Dense="true" Color="Color.Primary" />
+                             </MudListItem>
+                         }
+                    </MudList>
+
+                    <MudDivider Class="my-4"/>
+
+                    <MudText Typo="Typo.subtitle2" Class="mb-1" Color="Color.Secondary">Category</MudText>
+                    <MudList T="string" Dense="true" Clickable="false" DisablePadding="true">
+                        @foreach (var cat in Enum.GetValues<PotholeCategory>())
+                        {
+                            <MudListItem>
+                                <MudCheckBox T="bool" Label="@cat.ToString()" Value="@_selectedCategories.Contains(cat)" ValueChanged="@((bool v) => ToggleCategory(cat, v))" Dense="true" Color="Color.Secondary" />
+                            </MudListItem>
+                        }
+                    </MudList>
+
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="9" lg="10">
+                <MudPaper Class="pa-3 mb-4 d-flex flex-wrap align-center justify-space-between rounded-lg" Elevation="1">
+                    <MudText Typo="Typo.h6" Class="ml-2">All Reports (@filteredReports.Count)</MudText>
+                    
+                    <div class="d-flex gap-2">
+                         <MudSelect T="string" Label="Sort By" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="@_sortBy" ValueChanged="OnSortChanged" Style="width:160px;">
+                            <MudSelectItem Value="@("DateNewest")">Date (Newest)</MudSelectItem>
+                            <MudSelectItem Value="@("DateOldest")">Date (Oldest)</MudSelectItem>
+                            @* <MudSelectItem Value="@("Status")">Status</MudSelectItem> *@
+                        </MudSelect>
+
+                        <MudToggleIconButton @bind-Toggled="@_isBaseView"
+                                             Icon="@Icons.Material.Filled.ViewModule" Color="Color.Default"
+                                             ToggledIcon="@Icons.Material.Filled.ViewList" ToggledColor="Color.Primary"
+                                             Title="Switch View" />
+                    </div>
+                </MudPaper>
+
+                @if (_loading)
+                {
+                    <MudGrid>
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <MudItem xs="12" sm="6" md="4" lg="3">
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="250px" Class="rounded-lg" />
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" Class="mt-2" />
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="40%" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+                else if (!filteredReports.Any())
+                {
+                    <MudAlert Severity="Severity.Info" Class="mt-4">No reports found matching your criteria.</MudAlert>
+                }
+                else
+                {
+                    @if (!_isBaseView) // Grid View
+                    {
+                         <MudGrid Spacing="3">
+                             @foreach (var item in filteredReports)
+                             {
+                                 <MudItem xs="12" sm="6" md="4" lg="3">
+                                     <MudCard Elevation="2" Class="rounded-lg hover-scale h-100 d-flex flex-column">
+                                         <MudCardMedia Image="@GetImageUrl(item)" Height="180" />
+                                         <MudCardContent Class="flex-grow-1">
+                                             <div class="d-flex justify-space-between align-center mb-2">
+                                                 <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(item.Status)" Variant="Variant.Text">@item.Status</MudChip>
+                                                 <MudText Typo="Typo.caption" Color="Color.Default">@item.ReportedAt.ToLocalTime().ToString("MMM dd")</MudText>
+                                             </div>
+                                             <MudText Typo="Typo.subtitle1" Style="font-weight:600; line-height:1.3;" Class="mb-1 clamp-text">
+                                                 @item.Category
+                                             </MudText>
+                                             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="clamp-text-2">
+                                                 @item.Description
+                                             </MudText>
+                                         </MudCardContent>
+                                         <MudCardActions>
+                                             <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Default" Class="mr-1" />
+                                             <MudText Typo="Typo.caption">Lat: @item.Latitude.ToString("F3"), Lon: @item.LongTitude.ToString("F3")</MudText>
+                                             <MudSpacer />
+                                             <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Primary" OnClick="@(() => NavigateToMap(item))" />
+                                         </MudCardActions>
+                                     </MudCard>
+                                 </MudItem>
+                             }
+                         </MudGrid>
+                    }
+                    else // List View
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var item in filteredReports)
+                            {
+                                <MudPaper Class="pa-3 rounded-lg d-flex gap-4 align-center hover-bg" Elevation="1">
+                                    <MudImage Src="@GetImageUrl(item)" Width="100" Height="80" ObjectFit="ObjectFit.Cover" Class="rounded" />
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-center gap-2 mb-1">
+                                            <MudText Typo="Typo.subtitle1" Style="font-weight:bold;">@item.Category</MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(item.Status)" Variant="Variant.Text">@item.Status</MudChip>
+                                        </div>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">@item.Description</MudText>
+                                        <div class="d-flex align-center gap-3">
+                                            <MudText Typo="Typo.caption"><MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" /> @item.ReportedAt.ToLocalTime().ToString("g")</MudText>
+                                            <MudText Typo="Typo.caption"><MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" /> @item.Latitude.ToString("F3"), @item.LongTitude.ToString("F3")</MudText>
+                                        </div>
+                                    </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" OnClick="@(() => NavigateToMap(item))" />
+                                </MudPaper>
+                            }
+                        </div>
+                    }
+
+                    @if (filteredReports.Count > 20)
+                    {
+                        <div class="d-flex justify-center mt-6">
+                            <MudPagination Color="Color.Primary" Count="@((filteredReports.Count + 11) / 12)" Selected="1" />
+                        </div>
+                    }
+                }
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+</MudLayout>
+
+<style>
+    .hover-scale {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-scale:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+    }
+    .hover-bg:hover {
+        background-color: var(--mud-palette-background-grey);
+    }
+    .clamp-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .clamp-text-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+@code {
+    private List<Report> _allReports = new();
+    private List<Report> filteredReports = new();
+    private bool _loading = true;
+    
+    private string _searchString = "";
+    private HashSet<ReportStatus> _selectedStatuses = new();
+    private HashSet<PotholeCategory> _selectedCategories = new();
+    private string _sortBy = "DateNewest";
+    
+    private bool _isBaseView = false; // false = Grid, true = List
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ReportService");
+            _allReports = await client.GetFromJsonAsync<List<Report>>("Reports") ?? new List<Report>();
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reports: {ex}");
+            Snackbar.Add("Failed to load reports.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OnFilterChanged()
+    {
+        ApplyFilters();
+    }
+
+    private void ToggleStatus(ReportStatus status, bool isChecked)
+    {
+        if (isChecked) _selectedStatuses.Add(status);
+        else _selectedStatuses.Remove(status);
+        ApplyFilters();
+    }
+
+    private void ToggleCategory(PotholeCategory category, bool isChecked)
+    {
+        if (isChecked) _selectedCategories.Add(category);
+        else _selectedCategories.Remove(category);
+        ApplyFilters();
+    }
+    
+    private void OnSortChanged(string sort)
+    {
+        _sortBy = sort;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = _allReports.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(_searchString))
+        {
+            query = query.Where(x => 
+                (x.Description?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                x.Category.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
+        if (_selectedStatuses.Any())
+        {
+            query = query.Where(x => _selectedStatuses.Contains(x.Status));
+        }
+
+        if (_selectedCategories.Any())
+        {
+            query = query.Where(x => _selectedCategories.Contains(x.Category));
+        }
+
+        query = _sortBy switch
+        {
+            "DateNewest" => query.OrderByDescending(x => x.ReportedAt),
+            "DateOldest" => query.OrderBy(x => x.ReportedAt),
+            _ => query.OrderByDescending(x => x.ReportedAt)
+        };
+
+        filteredReports = query.ToList();
+    }
+
+    private string GetImageUrl(Report report)
+    {
+        if (report.Image != null && !string.IsNullOrEmpty(report.Image.StorageKey))
+        {
+            // Use the FileService proxy endpoint (exposed on port 8085) instead of direct MinIO access.
+            // This ensures we don't encounter metadata size limits or public policy issues.
+            return $"http://localhost:8085/Files/view/{report.Image.BucketName}/{report.Image.StorageKey}"; 
+        }
+        return "https://via.placeholder.com/300x200?text=No+Image"; // Placeholder
+    }
+
+    private void NavigateToMap(Report item)
+    {
+        if (item.Latitude != 0 && item.LongTitude != 0)
+        {
+            var lat = item.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var lng = item.LongTitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            NavigationManager.NavigateTo($"/mapview?lat={lat}&lng={lng}");
+        }
+        else
+        {
+             Snackbar.Add("This report does not have valid GPS coordinates.", Severity.Warning);
+        }
+    }
+
+    private Color GetStatusColor(ReportStatus status) => status switch
+    {
+        ReportStatus.Reported => Color.Info,
+        ReportStatus.UnderReview => Color.Warning,
+        ReportStatus.Inprogress => Color.Primary,
+        ReportStatus.Repaired => Color.Success,
+        ReportStatus.Rejected => Color.Error,
+        ReportStatus.CannotBeRepaired => Color.Dark,
+        _ => Color.Default
+    };
+}

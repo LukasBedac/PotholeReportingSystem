@@ -1,0 +1,178 @@
+﻿@page "/myreports"
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using GUIApps.Shared.Models
+@using GUIApps.Shared.Models.Enums
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>My Reports</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h5" Class="mb-4">My Reports</MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (_reports == null || !_reports.Any())
+    {
+        <MudAlert Severity="Severity.Info">You haven't submitted any reports yet.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@_reports" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info" Elevation="4">
+            <HeaderContent>
+                <MudTh>Image</MudTh>
+                <MudTh>Category</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Date</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Image">
+                    @if (context.Image != null && !string.IsNullOrEmpty(context.Image.StorageKey))
+                    {
+                         <MudIcon Icon="@Icons.Material.Filled.Image" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" />
+                    }
+                </MudTd>
+                <MudTd DataLabel="Category">@context.Category</MudTd>
+                <MudTd DataLabel="Status">
+                     <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small">@context.Status</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Date">@context.ReportedAt.ToLocalTime().ToString("g")</MudTd>
+                <MudTd DataLabel="Description">
+                    <MudText Typo="Typo.body2" Style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        @context.Description
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditReport(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteReportAsync(context))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+    @code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private List<Report>? _reports;
+    private bool _loading = true;
+    private string? _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        try
+        {
+            var authState = AuthenticationStateTask is null ? null : await AuthenticationStateTask;
+            _userId = authState?.User?.FindFirst("sub")?.Value 
+                      ?? authState?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(_userId))
+            {
+                Snackbar.Add("User not identified", Severity.Error);
+                _loading = false;
+                return;
+            }
+
+            var client = HttpClientFactory.CreateClient("ReportService");
+
+            _reports = await client.GetFromJsonAsync<List<Report>>($"Reports/user/{_userId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reports: {ex}");
+            Snackbar.Add("Failed to load reports.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void EditReport(Report report)
+    {
+        // This is done but i need to change page for user and admin privileges
+        // Navigation.NavigateTo($"/editreport/{report.Id}");
+        Snackbar.Add("Edit feature coming soon!", Severity.Info);
+    }
+
+    private async Task DeleteReportAsync(Report report)
+    {
+        var parameters = new DialogParameters<DialogContent>
+        {
+            { x => x.ContentText, "Do you really want to delete this report? This process cannot be undone." },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
+
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning", 
+            "Deleting can not be undone!", 
+            yesText:"Delete!", cancelText:"Cancel");
+
+        if (result == true)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("ReportService");
+                var response = await client.DeleteAsync($"Reports/{report.Id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                   Snackbar.Add("Report deleted.", Severity.Success);
+                   if (_reports != null) _reports.Remove(report);
+               }
+               else
+               {
+                   Snackbar.Add("Failed to delete report.", Severity.Error);
+               }
+            }
+            catch(Exception ex)
+            {
+               Console.WriteLine($"Error deleting report: {ex}");
+               Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetStatusColor(ReportStatus status)
+    {
+        return status switch
+        {
+            ReportStatus.Reported => Color.Primary,
+            ReportStatus.UnderReview => Color.Info,
+            ReportStatus.Inprogress => Color.Success,
+            ReportStatus.Rejected => Color.Error,
+            ReportStatus.CannotBeRepaired => Color.Error,
+            _ => Color.Default
+        };
+    }
+    
+    // Helper class if DialogParameters<T> needs a type, otherwise Map is used.
+    // But MessageBox uses string args primarily.
+    private class DialogContent { public string ContentText { get; set; } = ""; public string ButtonText { get; set; } = ""; public Color Color { get; set; } }
+}

@@ -1,8 +1,25 @@
+using AdminService.Database;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Configure Database
+var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "3306";
+var db = Environment.GetEnvironmentVariable("DB_NAME") ?? "admin_schema";
+var user = Environment.GetEnvironmentVariable("DB_USER") ?? "shared_db_user";
+var pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "shared_db_password";
+var connectionString = $"Server={host};Port={port};Database={db};User={user};Password={pass};";
+
+builder.Services.AddDbContext<AdminDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
+
+builder.Services.AddHttpClient<AdminService.Services.KeycloakService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,7 +33,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Auto-create database
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+    dbContext.Database.Migrate();
+    
+    // Seed initial data
+    //DbSeeder.Seed(dbContext);
+}
+
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

@@ -38,6 +38,15 @@
                         </MudButton>
                     </form>
                 </MudCard>
+                <MudCard Class="mt-4 pa-6">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Assignment"
+                               OnClick="@(() => NavigationManager.NavigateTo(_reportsUrl))"
+                               FullWidth="true">
+                        My Reports
+                    </MudButton>
+                </MudCard>
             </MudItem>
 
             <MudItem xs="12" md="8">
@@ -105,8 +114,8 @@
     @code {
     private bool _isLoading = true;
     private ClaimsPrincipal? _user;
+    private const string _reportsUrl = "/myreports";
 
-    // Display Fields
     private string _fullName = "";
     private string _username = "";
     private string _email = "";
@@ -132,14 +141,48 @@
 
             _username = _user.FindFirst("preferred_username")?.Value ?? _fullName;
 
-            // Extract Roles
-            // Keycloak often sends roles as "resource_access" or plain "role" claims depending on config.
-            // This grabs standard .NET role claims:
-            _roles = _user.FindAll("roles")
-                                         .Select(c => c.Value)
-                                         .Where(c => c.Equals("user") || c.Equals("admin"))
-                                         .Select(c => Enum.Parse<UserRole>(c, ignoreCase: true).ToString())
-                                         .ToList();
+            // Extract Roles from realm_access -> somehow keycloak added this before roles
+            var realmAccess = _user.FindFirst("realm_access")?.Value;
+            if (!string.IsNullOrEmpty(realmAccess))
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(realmAccess);
+                    if (doc.RootElement.TryGetProperty("roles", out var rolesElement) && rolesElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        var extractedRoles = rolesElement.EnumerateArray()
+                            .Select(r => r.GetString())
+                            .Where(r => !string.IsNullOrEmpty(r));
+
+                        _roles = extractedRoles
+                            .Where(r => string.Equals(r, "user", StringComparison.OrdinalIgnoreCase) || 
+                                        string.Equals(r, "admin", StringComparison.OrdinalIgnoreCase))
+                            .Select(r => Enum.TryParse<UserRole>(r, true, out var parsed) ? parsed.ToString() : null)
+                            .Where(r => r != null)
+                            .Cast<string>()
+                            .ToList();
+                    }
+                }
+                catch
+                {
+                    // Fallback or log error
+                }
+            }
+            
+            // Fallback: Check standard role claims if realm_access parsing didn't yield results or wasn't present
+            if (!_roles.Any())
+            {
+                _roles = _user.FindAll(ClaimTypes.Role)
+                             .Concat(_user.FindAll("role"))
+                             .Select(c => c.Value)
+                             .Where(c => string.Equals(c, "user", StringComparison.OrdinalIgnoreCase) || 
+                                         string.Equals(c, "admin", StringComparison.OrdinalIgnoreCase))
+                             .Select(c => Enum.TryParse<UserRole>(c, true, out var parsed) ? parsed.ToString() : null)
+                             .Where(r => r != null)
+                             .Cast<string>()
+                             .Distinct()
+                             .ToList();
+            }
 
             // Generate Initials for Avatar (e.g. "John Doe" -> "JD")
             if (!string.IsNullOrWhiteSpace(_fullName))

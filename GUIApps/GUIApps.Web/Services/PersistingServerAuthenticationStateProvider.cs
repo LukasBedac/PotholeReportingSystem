@@ -58,7 +58,7 @@ public class PersistingServerAuthenticationStateProvider : RevalidatingServerAut
             {
                 var userInfo = new UserInfo
                 {
-                    UserId = userId,
+                    UserId = userId, 
                     Name = name ?? "",
                     Email = email ?? "",
                 };

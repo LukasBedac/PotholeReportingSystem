@@ -1,15 +1,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY ["Report&VoteService.csproj", "./"]
-RUN dotnet restore "Report&VoteService.csproj"
+COPY ["Application/Report&VoteService/ReportVoteService.csproj", "Application/Report&VoteService/"]
+COPY ["GUIApps/GUIApps.Shared/GUIApps.Shared.csproj", "GUIApps/GUIApps.Shared/"]
+RUN dotnet restore "Application/Report&VoteService/ReportVoteService.csproj"
 
 COPY . .
-RUN dotnet publish "Report&VoteService.csproj" -c Release -o /app/publish
+WORKDIR "/src/Application/Report&VoteService"
+RUN dotnet publish "ReportVoteService.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
-ENTRYPOINT ["dotnet", "Report&VoteService.dll"]
+ENTRYPOINT ["dotnet", "ReportVoteService.dll"]

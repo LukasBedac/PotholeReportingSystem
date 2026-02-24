@@ -29,7 +29,7 @@ public class PersistentAuthenticationStateProvider : AuthenticationStateProvider
 
         foreach (var role in userInfo.Roles)
         {
-            claims.Add(new Claim("roles", role));
+            claims.Add(new Claim("role", role));
         }
         var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "PersistentAuth", "name", "role"));
         _authenticationStateTask = Task.FromResult(new AuthenticationState(authenticatedUser));

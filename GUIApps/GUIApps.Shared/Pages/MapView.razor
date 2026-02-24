@@ -1,0 +1,105 @@
+﻿@page "/mapview"
+@using Microsoft.AspNetCore.Authorization
+@using GUIApps.Shared.Models
+@using MudBlazor
+@using Microsoft.AspNetCore.WebUtilities
+@inject IJSRuntime JSRuntime
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@inject NavigationManager NavManager
+@attribute [Authorize]
+
+<PageTitle>Map View</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4" Style="height: 85vh; display: flex; flex-direction: column;">
+    <MudPaper Elevation="2" Class="pa-4 flex-grow-1 d-flex flex-column">
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.h5">Reports Map</MudText>
+            <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.Info">Showing @(_reports?.Count ?? 0) reports</MudChip>
+        </div>
+
+        @if (_loading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        
+        <div id="map" style="width: 100%; flex-grow: 1; min-height: 500px; border-radius: 8px; z-index: 1;"></div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<Report>? _reports;
+    
+    private double? _initLat;
+    private double? _initLng;
+    private int? _initZoom;
+
+    protected override void OnInitialized()
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("lat", out var latVal) &&
+            QueryHelpers.ParseQuery(uri.Query).TryGetValue("lng", out var lngVal))
+        {
+            if (double.TryParse(latVal, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lat) &&
+                double.TryParse(lngVal, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lng))
+            {
+                _initLat = lat;
+                _initLng = lng;
+                _initZoom = 15; // Point interest zoom
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ReportService");
+            _reports = await client.GetFromJsonAsync<List<Report>>("Reports");
+
+            if (_reports != null)
+            {
+                var markers = _reports.Select(r => new
+                {
+                    lat = r.Latitude,
+                    lng = r.LongTitude,
+                    category = r.Category.ToString(),
+                    status = r.Status.ToString(),
+                    description = r.Description,
+                    imageUrl = GetImageUrl(r)
+                }).ToList();
+
+                // Call initMap with optional parameters
+                await JSRuntime.InvokeVoidAsync("initMap", "map", markers, _initLat, _initLng, _initZoom);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading map data: {ex}");
+            Snackbar.Add("Failed to load map data", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetImageUrl(Report report)
+    {
+        if (report.Image != null && !string.IsNullOrEmpty(report.Image.StorageKey))
+        {
+            return $"http://localhost:8085/Files/view/{report.Image.BucketName}/{report.Image.StorageKey}";
+        }
+        return "";
+    }
+}

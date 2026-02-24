@@ -2,11 +2,13 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore
-COPY ["AdminService.csproj", "./"]
-RUN dotnet restore "AdminService.csproj"
+COPY ["Application/AdminService/AdminService.csproj", "Application/AdminService/"]
+COPY ["GUIApps/GUIApps.Shared/GUIApps.Shared.csproj", "GUIApps/GUIApps.Shared/"]
+RUN dotnet restore "Application/AdminService/AdminService.csproj"
 
 # Copy everything and publish
 COPY . .
+WORKDIR "/src/Application/AdminService"
 RUN dotnet publish "AdminService.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime

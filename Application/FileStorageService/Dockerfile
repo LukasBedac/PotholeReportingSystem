@@ -1,10 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY ["FileStorageService.csproj", "./"]
-RUN dotnet restore "FileStorageService.csproj"
+COPY ["Application/FileStorageService/FileStorageService.csproj", "Application/FileStorageService/"]
+# COPY ["GUIApps/GUIApps.Shared/GUIApps.Shared.csproj", "GUIApps/GUIApps.Shared/"] 
+# Uncomment above if you add reference to Shared
+RUN dotnet restore "Application/FileStorageService/FileStorageService.csproj"
 
 COPY . .
+WORKDIR "/src/Application/FileStorageService"
 RUN dotnet publish "FileStorageService.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime

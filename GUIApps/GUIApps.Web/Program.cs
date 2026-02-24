@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using MudBlazor.Services;
 
@@ -14,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"/root/.aspnet/DataProtection-Keys"));
 
 // Add device-specific services used by the GUIApps.Shared project
 //builder.Services.AddSingleton<IFormFactor, FormFactor>();
@@ -78,6 +82,16 @@ builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
 builder.Services.AddScoped<GUIApps.Shared.Services.Interfaces.IAuthService, GUIApps.Shared.Services.WebAuthService>();
+builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
+
+// Register HttpClients for server-side rendering (accessing other containers via Docker network)
+builder.Services.AddHttpClient("FileService", client => 
+    client.BaseAddress = new Uri("http://filestorage-service:8080"));
+builder.Services.AddHttpClient("ReportService", client => 
+    client.BaseAddress = new Uri("http://reports-service:8080"));
+builder.Services.AddHttpClient("AdminService", client => 
+    client.BaseAddress = new Uri("http://admin-service:8080"));
+
 builder.Services.AddControllers();
 
 builder.Services.AddMudServices();
@@ -137,7 +151,7 @@ public class DockerInternalNetworkHandler : DelegatingHandler
         {
             var builder = new UriBuilder(request.RequestUri)
             {
-                Host = "keycloak",
+                Host = "keycloak", // Service name in docker-compose
                 Port = 8080
             };
             request.RequestUri = builder.Uri;

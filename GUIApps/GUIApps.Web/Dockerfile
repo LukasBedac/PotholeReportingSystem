@@ -3,17 +3,17 @@ WORKDIR /src
 
 # Copy project files and restore dependencies
 # The context must be set to the GUIApps directory to access all related projects
-COPY ["GUIApps.Web/GUIApps.Web.csproj", "GUIApps.Web/"]
-COPY ["GUIApps.Web.Client/GUIApps.Web.Client.csproj", "GUIApps.Web.Client/"]
-COPY ["GUIApps.Shared/GUIApps.Shared.csproj", "GUIApps.Shared/"]
+COPY ["GUIApps/GUIApps.Web/GUIApps.Web.csproj", "GUIApps/GUIApps.Web/"]
+COPY ["GUIApps/GUIApps.Web.Client/GUIApps.Web.Client.csproj", "GUIApps/GUIApps.Web.Client/"]
+COPY ["GUIApps/GUIApps.Shared/GUIApps.Shared.csproj", "GUIApps/GUIApps.Shared/"]
 
-RUN dotnet restore "GUIApps.Web/GUIApps.Web.csproj"
+RUN dotnet restore "GUIApps/GUIApps.Web/GUIApps.Web.csproj"
 
 # Copy the full source code
 COPY . .
 
 # Build and publish
-WORKDIR "/src/GUIApps.Web"
+WORKDIR "/src/GUIApps/GUIApps.Web"
 RUN dotnet publish "GUIApps.Web.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
