@@ -10,7 +10,7 @@
 @inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
-    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-6">My Profile</MudText>
+    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-6">@Loc["MyProfile"]</MudText>
 
     @if (_isLoading)
     {
@@ -34,7 +34,7 @@
                                    StartIcon="@Icons.Material.Filled.Logout"
                                    ButtonType="ButtonType.Submit"
                                    FullWidth="true">
-                            Logout
+                            @Loc["Logout"]
                         </MudButton>
                     </form>
                 </MudCard>
@@ -44,18 +44,18 @@
                                StartIcon="@Icons.Material.Filled.Assignment"
                                OnClick="@(() => NavigationManager.NavigateTo(_reportsUrl))"
                                FullWidth="true">
-                        My Reports
+                        @Loc["MyReports"]
                     </MudButton>
                 </MudCard>
             </MudItem>
 
             <MudItem xs="12" md="8">
                 <MudCard Elevation="3" Class="pa-6">
-                    <MudText Typo="Typo.h6" Class="mb-4">Account Details</MudText>
+                    <MudText Typo="Typo.h6" Class="mb-4">@Loc["AccountDetails"]</MudText>
 
                     <MudGrid>
                         <MudItem xs="12">
-                            <MudTextField Label="Full Name"
+                            <MudTextField Label="@Loc["FullName"]"
                                           Value="@_fullName"
                                           ReadOnly="true"
                                           Variant="Variant.Outlined"
@@ -64,7 +64,7 @@
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudTextField Label="Email Address"
+                            <MudTextField Label="@Loc["EmailAddress"]"
                                           Value="@_email"
                                           ReadOnly="true"
                                           Variant="Variant.Outlined"
@@ -73,13 +73,13 @@
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudTextField Label="User ID (Sub)"
+                            <MudTextField Label="@Loc["UserID"]"
                                           Value="@_userId"
                                           ReadOnly="true"
                                           Variant="Variant.Outlined"
                                           Adornment="Adornment.Start"
                                           AdornmentIcon="@Icons.Material.Filled.Fingerprint"
-                                          HelperText="Unique identifier from Keycloak" />
+                                          HelperText="@Loc["KeycloakIdentifier"]" />
                         </MudItem>
 
                         <MudItem xs="12">
@@ -91,7 +91,7 @@
                                 }
                                 @if (!_roles.Any())
                                 {
-                                    <MudChip T="string" Color="Color.Surface" Size="Size.Small" Disabled="true">No Roles Assigned</MudChip>
+                                    <MudChip T="string" Color="Color.Surface" Size="Size.Small" Disabled="true">@Loc["No Roles Assigned"]</MudChip>
                                 }
                             </div>
                         </MudItem>
@@ -195,6 +195,4 @@
 
         _isLoading = false;
     }
-
-
 }

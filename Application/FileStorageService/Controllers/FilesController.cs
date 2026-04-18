@@ -5,7 +5,7 @@ using Minio.DataModel.Args;
 namespace FileStorageService.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class FilesController : ControllerBase
     {
         private readonly IMinioClient _minioClient;
@@ -18,6 +18,7 @@ namespace FileStorageService.Controllers
         }
 
         [HttpPost("upload")]
+        [RequestSizeLimit(20971520)] // 20 MB
         public async Task<IActionResult> Upload(IFormFile file)
         {
             if (file == null || file.Length == 0)

@@ -11,7 +11,7 @@
     <MudAppBar Elevation="4" Color="Color.Primary">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
         <MudText Typo="Typo.h6">
-            Pothole Report System
+            @Loc["AppTitle"]
         </MudText>
        
         <MudSpacer />
@@ -29,11 +29,12 @@
                 </form>
             </Authorized>
             <NotAuthorized>
-                <MudText Typo="Typo.subtitle2"> Login</MudText>
+                <MudText Typo="Typo.subtitle2"> @Loc["Login"]</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" Edge="Edge.End"
                 ButtonType="ButtonType.Submit" Href="/Account/Login"></MudIconButton>
             </NotAuthorized>
         </AuthorizeView>
+        <LanguageSwitcher />
     </MudAppBar>
     <MudDrawer @bind-Open="@_open" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Responsive">
         <NavMenu></NavMenu>
@@ -45,17 +46,17 @@
         <MudPaper Elevation="0" Square="true" Class="py-4 mt-8" Style="@($"border-top: 2px solid {Colors.Gray.Lighten1};")">
             <MudContainer MaxWidth="MaxWidth.Large">
                 <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="4">
-                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/privacy">Privacy</MudLink>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/privacy">@Loc["Privacy"]</MudLink>
                     <MudText Color="Color.Default">·</MudText>
-                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/terms">Terms</MudLink>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/terms">@Loc["Terms"]</MudLink>
                     <MudText Color="Color.Default">·</MudText>
-                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/contact">Contact</MudLink>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="/contact">@Loc["Contact"]</MudLink>
                     <MudText Color="Color.Default">·</MudText>
-                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="#">About</MudLink>
+                    <MudLink Color="Color.Default" Underline="Underline.Hover" Href="#">@Loc["About"]</MudLink>
                 </MudStack>
 
                 <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-2 text-muted">
-                    © @DateTime.Now.Year Pothole Report System
+                    © @DateTime.Now.Year @Loc["AppTitle"]
                 </MudText>
             </MudContainer>
         </MudPaper>

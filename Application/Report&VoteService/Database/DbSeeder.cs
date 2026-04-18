@@ -187,7 +187,7 @@ namespace ReportVoteService.Database
                     content.Add(fileContent, "file", $"seed_report_{report.Id}.png");
 
                     // Try to upload to FileService
-                    // Note: This relies on FileService being up and running.
+                    // This relies on FileService being up and running.
                     // If running in same docker-compose stack, it might need retries or might fail on first run if FileService is not ready.
                     var response = await client.PostAsync("Files/upload", content);
                     

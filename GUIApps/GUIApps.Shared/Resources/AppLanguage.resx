@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllReports" xml:space="preserve">
+    <value>All Reports</value>
+  </data>
+  <data name="MapView" xml:space="preserve">
+    <value>Map View</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="UserActions" xml:space="preserve">
+    <value>User Actions</value>
+  </data>
+  <data name="MyReports" xml:space="preserve">
+    <value>My Reports</value>
+  </data>
+  <data name="CreateReport" xml:space="preserve">
+    <value>Create Report</value>
+  </data>
+  <data name="AdminActions" xml:space="preserve">
+    <value>Admin Actions</value>
+  </data>
+  <data name="EditReports" xml:space="preserve">
+    <value>Edit Reports</value>
+  </data>
+  <data name="ManageUsers" xml:space="preserve">
+    <value>Manage Users</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Pothole Report System</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Terms" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Filters" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Keywords" xml:space="preserve">
+    <value>Keywords...</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Sort By</value>
+  </data>
+  <data name="DateNewest" xml:space="preserve">
+    <value>Date (Newest)</value>
+  </data>
+  <data name="DateOldest" xml:space="preserve">
+    <value>Date (Oldest)</value>
+  </data>
+  <data name="LocationNearest" xml:space="preserve">
+    <value>Location (Nearest)</value>
+  </data>
+  <data name="SwitchView" xml:space="preserve">
+    <value>Switch View</value>
+  </data>
+  <data name="NoReportsFound" xml:space="preserve">
+    <value>No reports found matching your criteria.</value>
+  </data>
+  <data name="Lat" xml:space="preserve">
+    <value>Lat</value>
+  </data>
+  <data name="Lon" xml:space="preserve">
+    <value>Lon</value>
+  </data>
+  <data name="FailedLoadReports" xml:space="preserve">
+    <value>Failed to load reports.</value>
+  </data>
+  <data name="LocationError" xml:space="preserve">
+    <value>Could not determine your location to sort by nearest.</value>
+  </data>
+  <data name="NoGpsError" xml:space="preserve">
+    <value>This report does not have valid GPS coordinates.</value>
+  </data>
+  <data name="Pothole" xml:space="preserve">
+    <value>Pothole</value>
+  </data>
+  <data name="CrackedRoad" xml:space="preserve">
+    <value>Cracked Road</value>
+  </data>
+  <data name="DamagedShoulder" xml:space="preserve">
+    <value>Damaged Shoulder</value>
+  </data>
+  <data name="MissingSign" xml:space="preserve">
+    <value>Missing Sign</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Reported" xml:space="preserve">
+    <value>Reported</value>
+  </data>
+  <data name="UnderReview" xml:space="preserve">
+    <value>Under Review</value>
+  </data>
+  <data name="Inprogress" xml:space="preserve">
+    <value>In Progress</value>
+  </data>
+  <data name="Repaired" xml:space="preserve">
+    <value>Repaired</value>
+  </data>
+  <data name="Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="CannotBeRepaired" xml:space="preserve">
+    <value>Cannot Be Repaired</value>
+  </data>
+  <data name="Photo" xml:space="preserve">
+    <value>Photo</value>
+  </data>
+  <data name="TakePhoto" xml:space="preserve">
+    <value>Take a photo</value>
+  </data>
+  <data name="DragDropPhoto" xml:space="preserve">
+    <value>Drag &amp; drop photo/video here, or click to select</value>
+  </data>
+  <data name="Selected" xml:space="preserve">
+    <value>Selected:</value>
+  </data>
+  <data name="MapLocation" xml:space="preserve">
+    <value>Map Location</value>
+  </data>
+  <data name="MapHelp" xml:space="preserve">
+    <value>Drag the pin or click on the map to manually set the exact location.</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="GpsAlert" xml:space="preserve">
+    <value>If GPS location was not found in the photo, or if you didn't select it on the map, please fill in the fields below.</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="CityRequired" xml:space="preserve">
+    <value>City is required</value>
+  </data>
+  <data name="District" xml:space="preserve">
+    <value>District</value>
+  </data>
+  <data name="Region" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="CategoryRequired" xml:space="preserve">
+    <value>Category is required</value>
+  </data>
+  <data name="StatusAuto" xml:space="preserve">
+    <value>Status is set automatically for new reports.</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="SubmitSuccess" xml:space="preserve">
+    <value>Report successfully created!</value>
+  </data>
+  <data name="SubmitErrorForm" xml:space="preserve">
+    <value>Please fill in all required fields and upload a photo.</value>
+  </data>
+  <data name="UploadError" xml:space="preserve">
+    <value>Failed to read file</value>
+  </data>
+  <data name="ExifLocationFound" xml:space="preserve">
+    <value>Location found from photo EXIF data!</value>
+  </data>
+  <data name="ExifLocationNotFound" xml:space="preserve">
+    <value>No GPS data found in the photo, using defaults or map.</value>
+  </data>
+  <data name="SubmitException" xml:space="preserve">
+    <value>Error creating report</value>
+  </data>
+  <data name="PhotoRequired" xml:space="preserve">
+    <value>Photo is required</value>
+  </data>
+  <data name="LoginRequired" xml:space="preserve">
+    <value>Unable to identify user. Please try logging in again.</value>
+  </data>
+  <data name="NoReportsYet" xml:space="preserve">
+    <value>You haven't submitted any reports yet.</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Are you sure you want to delete this report?</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ReportDeleted" xml:space="preserve">
+    <value>Report deleted successfully.</value>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>Failed to delete report.</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="UserID" xml:space="preserve">
+    <value>User ID</value>
+  </data>
+  <data name="Report ID" xml:space="preserve">
+    <value>Report ID</value>
+  </data>
+  <data name="GlobalStats" xml:space="preserve">
+    <value>Global Reports Statistics</value>
+  </data>
+  <data name="NoStatsData" xml:space="preserve">
+    <value>No data available to generate statistics.</value>
+  </data>
+  <data name="TotalReports" xml:space="preserve">
+    <value>Total Reports</value>
+  </data>
+  <data name="ReportsByStatus" xml:space="preserve">
+    <value>Reports by Status</value>
+  </data>
+  <data name="ReportsByCategory" xml:space="preserve">
+    <value>Reports by Category</value>
+  </data>
+  <data name="TopCities" xml:space="preserve">
+    <value>Top 5 Cities with Issues</value>
+  </data>
+  <data name="ReportedLC" xml:space="preserve">
+    <value>reported</value>
+  </data>
+  <data name="NoCityData" xml:space="preserve">
+    <value>No city data available.</value>
+  </data>
+  <data name="TopDistricts" xml:space="preserve">
+    <value>Top 5 Districts</value>
+  </data>
+  <data name="NoDistrictData" xml:space="preserve">
+    <value>No district data available.</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>My Profile</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="AccountDetails" xml:space="preserve">
+    <value>Account Details</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Full Name</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Email Address</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="ReportsMap" xml:space="preserve">
+    <value>Reports Map</value>
+  </data>
+  <data name="NoRolesAssigned" xml:space="preserve">
+    <value>No Roles Assigned</value>
+  </data>
+  <data name="KeycloakIdentifier" xml:space="preserve">
+    <value>Unique identifier</value>
+  </data>
+</root>

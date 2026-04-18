@@ -38,6 +38,14 @@ builder.Services.AddHttpClient("AdminService", client =>
     client.BaseAddress = new Uri("http://admin-service:8080");
 });
 
+var kafkaBootstrap = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092";
+builder.Services.AddSingleton<GUIApps.Shared.Services.Kafka.IKafkaProducer>(new GUIApps.Shared.Services.Kafka.KafkaProducer(kafkaBootstrap));
+builder.Services.AddHostedService(sp => 
+    new ReportVoteService.Services.AdminAssignedConsumer(
+        kafkaBootstrap, 
+        sp, 
+        sp.GetRequiredService<ILogger<ReportVoteService.Services.AdminAssignedConsumer>>()));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

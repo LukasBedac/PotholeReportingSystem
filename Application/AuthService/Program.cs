@@ -13,13 +13,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://127.0.0.1:8080/realms/PotholeReportSystem";
+        options.Authority = "http://localhost:8080/realms/PotholeReportSystem";
+        options.MetadataAddress = "http://keycloak:8080/realms/PotholeReportSystem/.well-known/openid-configuration";
         options.Audience = "pothole-api";
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
             ValidateIssuer = true,
+            ValidIssuer = "http://localhost:8080/realms/PotholeReportSystem",
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
         };

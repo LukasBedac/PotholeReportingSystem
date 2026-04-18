@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 /PotholeReportingSystem.sln
 /PotholeReportingSystem.sln
+/Infra/mysql-init/init.sql
+/Infra/docker-compose_schemas.yml
+/Infra/docker-compose.yml

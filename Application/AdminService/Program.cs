@@ -24,6 +24,14 @@ builder.Services.AddHttpClient<AdminService.Services.KeycloakService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var kafkaBootstrap = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092";
+builder.Services.AddSingleton<GUIApps.Shared.Services.Kafka.IKafkaProducer>(new GUIApps.Shared.Services.Kafka.KafkaProducer(kafkaBootstrap));
+builder.Services.AddHostedService(sp => 
+    new AdminService.Services.ReportCreatedConsumer(
+        kafkaBootstrap, 
+        sp, 
+        sp.GetRequiredService<ILogger<AdminService.Services.ReportCreatedConsumer>>()));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

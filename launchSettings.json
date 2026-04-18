@@ -1,0 +1,23 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "guiapps.web": "StartDebugging",
+        "admin-service": "StartDebugging",
+        "auth-service": "StartDebugging",
+        "filestorage-service": "StartDebugging",
+        "geo-service": "StartWithoutDebugging",
+        "integration-service": "StartWithoutDebugging",
+        "kafka": "StartWithoutDebugging",
+        "keycloak": "StartWithoutDebugging",
+        "minio_storage": "StartWithoutDebugging",
+        "mysql_shared_db": "StartWithoutDebugging",
+        "notification-service": "StartWithoutDebugging",
+        "reports-service": "StartDebugging",
+        "zookeeper": "StartWithoutDebugging"
+      }
+    }
+  }
+}

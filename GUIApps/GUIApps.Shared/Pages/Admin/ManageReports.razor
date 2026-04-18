@@ -9,9 +9,9 @@
 
 @attribute [Authorize(Roles = "admin")]
 
-<PageTitle>Edit Reports</PageTitle>
+<PageTitle>@Loc["EditReports"]</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Edit Reports</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">@Loc["EditReports"]</MudText>
 
 @if (_loading)
 {
@@ -19,33 +19,33 @@
 }
 else
 {
-    <MudTable Items="@_reports" Hover="true" Striped="true" Filter="FilterFunc" SortLabel="Sort By">
+    <MudTable Items="@_reports" Hover="true" Striped="true" Filter="FilterFunc" SortLabel="@Loc["SortBy"]">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">All Reports</MudText>
+            <MudText Typo="Typo.h6">@Loc["AllReports"]</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudTextField @bind-Value="searchString" Placeholder="@Loc["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
             <MudTh><MudTableSortLabel SortBy="@((Report x) => (object) x.Id)">ID</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="@((Report x) => x.Category)">Category</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="@((Report x) => x.Status)">Status</MudTableSortLabel></MudTh>
-            <MudTh>Description</MudTh>
-            <MudTh><MudTableSortLabel SortBy="@((Report x) => (object)x.ReportedAt)">Date</MudTableSortLabel></MudTh>
-            <MudTh>Actions</MudTh>
+            <MudTh><MudTableSortLabel SortBy="@((Report x) => x.Category)">@Loc["Category"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="@((Report x) => x.Status)">@Loc["Status"]</MudTableSortLabel></MudTh>
+            <MudTh>@Loc["Description"]</MudTh>
+            <MudTh><MudTableSortLabel SortBy="@((Report x) => (object)x.ReportedAt)">@Loc["Date"]</MudTableSortLabel></MudTh>
+            <MudTh>@Loc["Actions"]</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ID">@context.Id</MudTd>
-            <MudTd DataLabel="Category">@context.Category</MudTd>
-            <MudTd DataLabel="Status">
-                 <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)" Variant="Variant.Text">@context.Status</MudChip>
+            <MudTd DataLabel="@Loc["Category"]">@Loc[context.Category.ToString()]</MudTd>
+            <MudTd DataLabel="@Loc["Status"]">
+                 <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)" Variant="Variant.Text">@Loc[context.Status.ToString()]</MudChip>
             </MudTd>
-            <MudTd DataLabel="Description">
+            <MudTd DataLabel="@Loc["Description"]">
                 <MudText Typo="Typo.body2" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                     @context.Description
                 </MudText>
             </MudTd>
-            <MudTd DataLabel="Date">@context.ReportedAt.ToLocalTime().ToString("g")</MudTd>
-            <MudTd DataLabel="Actions">
+            <MudTd DataLabel="@Loc["Date"]">@context.ReportedAt.ToLocalTime().ToString("g")</MudTd>
+            <MudTd DataLabel="@Loc["Actions"]">
                  <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditReport(context.Id))" />
             </MudTd>
         </RowTemplate>
@@ -71,11 +71,11 @@ else
         try
         {
             var client = HttpClientFactory.CreateClient("ReportService");
-            _reports = await client.GetFromJsonAsync<List<Report>>("Reports") ?? new List<Report>();
+            _reports = await client.GetFromJsonAsync<List<Report>>("api/Reports") ?? new List<Report>();
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error loading reports: {ex.Message}", Severity.Error);
+            Snackbar.Add(Loc["FailedLoadReports"].Value, Severity.Error);
         }
         finally
         {

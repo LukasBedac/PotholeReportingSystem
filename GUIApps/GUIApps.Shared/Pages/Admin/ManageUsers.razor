@@ -7,9 +7,9 @@
 
 @attribute [Authorize(Roles = "admin")]
 
-<PageTitle>Manage Users</PageTitle>
+<PageTitle>@Loc["ManageUsers"]</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Manage Users</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">@Loc["ManageUsers"]</MudText>
 
 @if (_loading)
 {
@@ -19,20 +19,20 @@ else
 {
     <MudTable Items="@_users" Hover="true" Striped="true" Filter="FilterFunc">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Users</MudText>
+            <MudText Typo="Typo.h6">@Loc["Users"]</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudTextField @bind-Value="searchString" Placeholder="@Loc["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh>Name</MudTh>
-            <MudTh>Email</MudTh>
-            <MudTh>Actions</MudTh>
+            <MudTh>@Loc["Name"]</MudTh>
+            <MudTh>@Loc["Email"]</MudTh>
+            <MudTh>@Loc["Actions"]</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Name">@context.Name</MudTd>
-            <MudTd DataLabel="Email">@context.Email</MudTd>
-            <MudTd DataLabel="Actions">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Disabled="true">Edit</MudButton>
+            <MudTd DataLabel="@Loc["Name"]">@context.Name</MudTd>
+            <MudTd DataLabel="@Loc["Email"]">@context.Email</MudTd>
+            <MudTd DataLabel="@Loc["Actions"]">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Disabled="true">@Loc["Edit"]</MudButton>
             </MudTd>
         </RowTemplate>
         <PagerContent>

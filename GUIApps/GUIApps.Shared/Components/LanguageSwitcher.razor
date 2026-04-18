@@ -1,0 +1,19 @@
+@using System.Globalization
+@inject NavigationManager Navigation
+
+<MudMenu Label="@CultureInfo.CurrentUICulture.Name" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true">
+    <MudMenuItem OnClick="@(() => SetCulture("en-US"))">English (en-US)</MudMenuItem>
+    <MudMenuItem OnClick="@(() => SetCulture("sk-SK"))">Slovenčina (sk-SK)</MudMenuItem>
+</MudMenu>
+
+@code {
+    private void SetCulture(string culture)
+    {
+        var uri = new Uri(Navigation.Uri)
+            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+        
+        var query = $"?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(uri)}";
+        
+        Navigation.NavigateTo("/Culture/Set" + query, forceLoad: true);
+    }
+}

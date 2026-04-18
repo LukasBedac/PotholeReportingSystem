@@ -4,31 +4,31 @@
 @using MudBlazor
 
 <MudNavMenu Style="margin-top: 10px; font-size: 16px">
-    <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">Menu</MudText>
-    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">All Reports</MudNavLink>
-    <MudNavLink Icon="@Icons.Material.Filled.Map"  Href="/mapview" Match="NavLinkMatch.Prefix">Map View</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">@Loc["AllReports"]</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Map"  Href="/mapview" Match="NavLinkMatch.Prefix">@Loc["MapView"]</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.PieChart" Href="/statistics" Match="NavLinkMatch.Prefix">@Loc["Statistics"]</MudNavLink>
     <AuthorizeView Roles="User, Admin, user, admin">
         <Authorized>
             <MudDivider />
-            <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">User Actions</MudText>
-            <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="/myreports" Match="NavLinkMatch.Prefix">My Reports</MudNavLink>
-            <MudNavLink Icon="@Icons.Material.Filled.AddCircle" Href="/createreport" Match="NavLinkMatch.Prefix">Create Report</MudNavLink>
+            <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">@Loc["UserActions"]</MudText>
+            <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="/myreports" Match="NavLinkMatch.Prefix">@Loc["MyReports"]</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.AddCircle" Href="/createreport" Match="NavLinkMatch.Prefix">@Loc["CreateReport"]</MudNavLink>
         </Authorized>
     </AuthorizeView>
     <AuthorizeView Roles="Admin, admin">
         <Authorized>
             <MudDivider />
-            <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">Admin Actions</MudText>
+            <MudText Typo="Typo.subtitle2" Class="ml-4 mb-4 mt-2">@Loc["AdminActions"]</MudText>
 
-            <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="/admin/manage-reports" Match="NavLinkMatch.Prefix">Edit Reports</MudNavLink>
-            <MudNavLink Icon="@Icons.Material.Filled.Group" Href="/admin/manage-users" Match="NavLinkMatch.Prefix">Manage Users</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="/admin/manage-reports" Match="NavLinkMatch.Prefix">@Loc["EditReports"]</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Group" Href="/admin/manage-users" Match="NavLinkMatch.Prefix">@Loc["ManageUsers"]</MudNavLink>
 
         </Authorized>
     </AuthorizeView>
     <MudDivider />
 
-    <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="ml-4 mb-4 mt-4">Account</MudText>
-    <MudNavLink Icon="@Icons.Material.Filled.Settings" Href="/settings">Settings</MudNavLink>
-    <MudNavLink Icon="@Icons.Material.Rounded.Person2" Href="/profile" Match="NavLinkMatch.Prefix">Profile</MudNavLink>
+    <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="ml-4 mb-4 mt-4">@Loc["Account"]</MudText>
+    <MudNavLink Icon="@Icons.Material.Filled.Settings" Href="/settings">@Loc["Settings"]</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Rounded.Person2" Href="/profile" Match="NavLinkMatch.Prefix">@Loc["Profile"]</MudNavLink>
 </MudNavMenu>
 

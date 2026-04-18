@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllReports" xml:space="preserve">
+    <value>Všetky Hlásenia</value>
+  </data>
+  <data name="MapView" xml:space="preserve">
+    <value>Zobrazenie na Mape</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>Štatistiky</value>
+  </data>
+  <data name="UserActions" xml:space="preserve">
+    <value>Akcie Používateľa</value>
+  </data>
+  <data name="MyReports" xml:space="preserve">
+    <value>Moje Hlásenia</value>
+  </data>
+  <data name="CreateReport" xml:space="preserve">
+    <value>Vytvoriť Hlásenie</value>
+  </data>
+  <data name="AdminActions" xml:space="preserve">
+    <value>Akcie Administrátora</value>
+  </data>
+  <data name="EditReports" xml:space="preserve">
+    <value>Úprava hlásení</value>
+  </data>
+  <data name="ManageUsers" xml:space="preserve">
+    <value>Správa Používateľov</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Systém hlásenia výtlkov</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Prihlásiť sa</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Súkromie</value>
+  </data>
+  <data name="Terms" xml:space="preserve">
+    <value>Podmienky</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>O nás</value>
+  </data>
+  <data name="Filters" xml:space="preserve">
+    <value>Filtre</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Hľadať</value>
+  </data>
+  <data name="Keywords" xml:space="preserve">
+    <value>Kľúčové slová...</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Stav</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Kategória</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Zoradiť podľa</value>
+  </data>
+  <data name="DateNewest" xml:space="preserve">
+    <value>Dátum (Najnovšie)</value>
+  </data>
+  <data name="DateOldest" xml:space="preserve">
+    <value>Dátum (Najstaršie)</value>
+  </data>
+  <data name="LocationNearest" xml:space="preserve">
+    <value>Poloha (Najbližšie)</value>
+  </data>
+  <data name="SwitchView" xml:space="preserve">
+    <value>Prepnúť zobrazenie</value>
+  </data>
+  <data name="NoReportsFound" xml:space="preserve">
+    <value>Nenašli sa žiadne hlásenia vyhovujúce vašim kritériám.</value>
+  </data>
+  <data name="Lat" xml:space="preserve">
+    <value>Z. šírka</value>
+  </data>
+  <data name="Lon" xml:space="preserve">
+    <value>Z. dĺžka</value>
+  </data>
+  <data name="FailedLoadReports" xml:space="preserve">
+    <value>Nepodarilo sa načítať hlásenia.</value>
+  </data>
+  <data name="LocationError" xml:space="preserve">
+    <value>Nepodarilo sa určiť vašu polohu pre zoradenie od najbližšieho.</value>
+  </data>
+  <data name="NoGpsError" xml:space="preserve">
+    <value>Toto hlásenie nemá platné GPS súradnice.</value>
+  </data>
+  <data name="Pothole" xml:space="preserve">
+    <value>Výtlk</value>
+  </data>
+  <data name="CrackedRoad" xml:space="preserve">
+    <value>Popraskaná cesta</value>
+  </data>
+  <data name="DamagedShoulder" xml:space="preserve">
+    <value>Poškodená krajnica</value>
+  </data>
+  <data name="MissingSign" xml:space="preserve">
+    <value>Chýbajúca značka</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>Iné</value>
+  </data>
+  <data name="Reported" xml:space="preserve">
+    <value>Nahlásené</value>
+  </data>
+  <data name="UnderReview" xml:space="preserve">
+    <value>Posudzuje sa</value>
+  </data>
+  <data name="Inprogress" xml:space="preserve">
+    <value>Pripravuje sa</value>
+  </data>
+  <data name="Repaired" xml:space="preserve">
+    <value>Opravené</value>
+  </data>
+  <data name="Rejected" xml:space="preserve">
+    <value>Zamietnuté</value>
+  </data>
+  <data name="CannotBeRepaired" xml:space="preserve">
+    <value>Nedá sa opraviť</value>
+  </data>
+  <data name="Photo" xml:space="preserve">
+    <value>Fotografia</value>
+  </data>
+  <data name="TakePhoto" xml:space="preserve">
+    <value>Odotiť fotografiu</value>
+  </data>
+  <data name="DragDropPhoto" xml:space="preserve">
+    <value>Presuňte sem fotografiu/video, alebo kliknite pre výber</value>
+  </data>
+  <data name="Selected" xml:space="preserve">
+    <value>Vybrané:</value>
+  </data>
+  <data name="MapLocation" xml:space="preserve">
+    <value>Poloha na mape</value>
+  </data>
+  <data name="MapHelp" xml:space="preserve">
+    <value>Presuňte špendlík alebo kliknite na mapu pre manuálne nastavenie presnej polohy.</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>Zemepisná šírka</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>Zemepisná dĺžka</value>
+  </data>
+  <data name="GpsAlert" xml:space="preserve">
+    <value>Ak v fotografii nebola nájdená poloha GPS, alebo ste ju nevybrali na mape, vyplňte prosím polia nižšie.</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>Mesto</value>
+  </data>
+  <data name="CityRequired" xml:space="preserve">
+    <value>Mesto je povinné</value>
+  </data>
+  <data name="District" xml:space="preserve">
+    <value>Okres</value>
+  </data>
+  <data name="Region" xml:space="preserve">
+    <value>Obec (Kraj)</value>
+  </data>
+  <data name="CategoryRequired" xml:space="preserve">
+    <value>Kategória je povinná</value>
+  </data>
+  <data name="StatusAuto" xml:space="preserve">
+    <value>Stav je automaticky nastavený pre nové hlásenia.</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Popis</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Obnoviť</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Odoslať</value>
+  </data>
+  <data name="SubmitSuccess" xml:space="preserve">
+    <value>Hlásenie bolo úspešne vytvorené!</value>
+  </data>
+  <data name="SubmitErrorForm" xml:space="preserve">
+    <value>Vyplňte prosím všetky povinné polia a nahrajte fotografiu.</value>
+  </data>
+  <data name="UploadError" xml:space="preserve">
+    <value>Nepodarilo sa načítať súbor</value>
+  </data>
+  <data name="ExifLocationFound" xml:space="preserve">
+    <value>Poloha bola nájdená z EXIF údajov fotografie!</value>
+  </data>
+  <data name="ExifLocationNotFound" xml:space="preserve">
+    <value>Vo fotografii neboli nájdené žiadne údaje GPS, použijú sa predvolené hodnoty alebo mapa.</value>
+  </data>
+  <data name="SubmitException" xml:space="preserve">
+    <value>Chyba pri vytváraní hlásenia</value>
+  </data>
+  <data name="PhotoRequired" xml:space="preserve">
+    <value>Fotografia je povinná</value>
+  </data>
+  <data name="LoginRequired" xml:space="preserve">
+    <value>Nepodarilo sa identifikovať používateľa. Skúste sa prihlásiť znova.</value>
+  </data>
+  <data name="NoReportsYet" xml:space="preserve">
+    <value>Zatiaľ ste neodoslali žiadne hlásenia.</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Obrázok</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Dátum</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Akcie</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Naozaj chcete vymazať toto hlásenie?</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Vymazať</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Zrušiť</value>
+  </data>
+  <data name="ReportDeleted" xml:space="preserve">
+    <value>Reported At</value>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>Nepodarilo sa vymazať hlásenie.</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Varovanie</value>
+  </data>
+  <data name="UserID" xml:space="preserve">
+    <value>ID používateľa</value>
+  </data>
+  <data name="Report ID" xml:space="preserve">
+    <value>ID Hlásenia</value>
+  </data>
+  <data name="GlobalStats" xml:space="preserve">
+    <value>Globálne štatistiky hlásení</value>
+  </data>
+  <data name="NoStatsData" xml:space="preserve">
+    <value>Nie sú k dispozícii žiadne údaje na generovanie štatistík.</value>
+  </data>
+  <data name="TotalReports" xml:space="preserve">
+    <value>Celkový počet hlásení</value>
+  </data>
+  <data name="ReportsByStatus" xml:space="preserve">
+    <value>Hlásenia podľa stavu</value>
+  </data>
+  <data name="ReportsByCategory" xml:space="preserve">
+    <value>Hlásenia podľa kategórie</value>
+  </data>
+  <data name="TopCities" xml:space="preserve">
+    <value>Top 5 miest s problémami</value>
+  </data>
+  <data name="ReportedLC" xml:space="preserve">
+    <value>nahlásených</value>
+  </data>
+  <data name="NoCityData" xml:space="preserve">
+    <value>Žiadne údaje o mestách.</value>
+  </data>
+  <data name="TopDistricts" xml:space="preserve">
+    <value>Top 5 okresov</value>
+  </data>
+  <data name="NoDistrictData" xml:space="preserve">
+    <value>Žiadne údaje o okresoch.</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Používatelia</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Meno</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Upraviť</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Môj profil</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Odhlásiť sa</value>
+  </data>
+  <data name="AccountDetails" xml:space="preserve">
+    <value>Detaily účtu</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Celé meno</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Emailová adresa</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Účet</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Nastavenia</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="ReportsMap" xml:space="preserve">
+    <value>Mapa hlásení</value>
+  </data>
+  <data name="NoRolesAssigned" xml:space="preserve">
+    <value>Žiadne pridelené role</value>
+  </data>
+  <data name="KeycloakIdentifier" xml:space="preserve">
+    <value>Unikátny identifikátor</value>
+  </data>
+</root>

@@ -1,4 +1,5 @@
 ﻿using GUIApps.Shared.Models; // Ensure this matches your namespace for UserInfo
+using GUIApps.Models.Enums;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
@@ -74,6 +75,8 @@ public class PersistingServerAuthenticationStateProvider : RevalidatingServerAut
                                 userInfo.Roles = roles.EnumerateArray()
                                                     .Where(r => r.ValueKind == JsonValueKind.String)
                                                     .Select(r => r.GetString()!)
+                                                    .Where(r => Enum.TryParse<UserRole>(r, true, out _))
+                                                    .Select(r => Enum.Parse<UserRole>(r, true))
                                                     .ToList();
                             }
                         }

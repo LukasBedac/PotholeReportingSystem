@@ -2,21 +2,25 @@ using Microsoft.AspNetCore.Mvc;
 using ReportVoteService.Database;
 using GUIApps.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using GUIApps.Shared.Events;
+using GUIApps.Shared.Services.Kafka;
 
 namespace ReportVoteService.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ReportsController : ControllerBase
     {
         private readonly ReportsVoteDbContext _context;
         private readonly ILogger<ReportsController> _logger;
+        private readonly IKafkaProducer _kafkaProducer;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public ReportsController(ReportsVoteDbContext context, ILogger<ReportsController> logger, IHttpClientFactory httpClientFactory)
+        public ReportsController(ReportsVoteDbContext context, ILogger<ReportsController> logger, IKafkaProducer kafkaProducer, IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _logger = logger;
+            _kafkaProducer = kafkaProducer;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -43,7 +47,7 @@ namespace ReportVoteService.Controllers
 
             report.ReportedAt = DateTime.UtcNow;
             report.LastUpdatedAt = DateTime.UtcNow;
-            
+
             if (report.Image != null)
             {
                 if (report.Image.Id == Guid.Empty)
@@ -53,47 +57,24 @@ namespace ReportVoteService.Controllers
                     report.Image.UploadedAt = DateTime.UtcNow;
             }
 
-            // Assign based on Region (Kraj) primarily, as Admins are assigned to Regions.
+            // Persist the report in 'Pending' state, do NOT wait for API HTTP call to AdminService.
+            _context.Reports.Add(report);
+            await _context.SaveChangesAsync();
+
+            // Fire and forget via Kafka Events Let the Admin Service handle assignment asynchronously.
             var region = !string.IsNullOrWhiteSpace(report.Region) ? report.Region : 
                          (!string.IsNullOrWhiteSpace(report.District) ? report.District : null);
 
-            if (string.IsNullOrEmpty(report.AssignedAdminID) && !string.IsNullOrEmpty(region))
+            var reportCreatedEvent = new ReportCreatedEvent
             {
-                try
-                {
-                    var adminClient = _httpClientFactory.CreateClient("AdminService");
-                    
-                    // 1. Find Admin for Region (passed as 'district' query param for now as per AdminService API)
-                    var adminJson = await adminClient.GetStringAsync($"api/admins/by-district?district={region}");
-                    if (!string.IsNullOrEmpty(adminJson))
-                    {
-                        var jsonDoc = System.Text.Json.JsonDocument.Parse(adminJson);
-                        if (jsonDoc.RootElement.TryGetProperty("id", out var idElement))
-                        {
-                            var adminIdStr = idElement.GetString();
-                            if (Guid.TryParse(adminIdStr, out var adminGuid))
-                            {
-                                report.AssignedAdminID = adminIdStr;
-                                _logger.LogInformation("Assigned report {ReportId} to admin {AdminId} for region {Region}", report.Id, report.AssignedAdminID, region);
+                ReportId = report.Id,
+                UserID = report.UserID,
+                Region = region,
+                District = report.District,
+                ReportedAt = report.ReportedAt
+            };
 
-                                // 2. Notify AdminService so it updates its list
-                                var response = await adminClient.PostAsJsonAsync($"api/admins/{adminGuid}/assign-report", report.Id);
-                                if (!response.IsSuccessStatusCode)
-                                {
-                                    _logger.LogWarning("Failed to update AdminService list for admin {AdminId}. Status: {Status}", adminGuid, response.StatusCode);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Failed to auto-assign admin for region {Region}: {Error}", region, ex.Message);
-                }
-            }
-
-            _context.Reports.Add(report);
-            await _context.SaveChangesAsync();
+            await _kafkaProducer.ProduceAsync("report-created-topic", report.Id.ToString(), reportCreatedEvent);
 
             return CreatedAtAction(nameof(GetReport), new { id = report.Id }, report);
         }

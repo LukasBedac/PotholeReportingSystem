@@ -8,33 +8,43 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
+@using System.Text.Json
 
 @inject IHttpClientFactory HttpClientFactory
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
+@implements IDisposable
 
-<PageTitle>Create Report</PageTitle>
+<PageTitle>@Loc["CreateReport"]</PageTitle>
 
 <MudLayout>
     <MudContainer MaxWidth="MaxWidth.Large">
 
         <MudPaper Class="pa-6 mt-6" Elevation="1">
-            <MudText Typo="Typo.h5" Class="mb-4">Create report</MudText>
+            <MudText Typo="Typo.h5" Class="mb-4">@Loc["CreateReport"]</MudText>
 
             <MudForm @ref="_form">
                 <MudGrid Spacing="3">
 
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Photo (mandatory)</MudText>
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">@Loc["Photo"]</MudText>
 
-                        <MudFileUpload T="IBrowserFile" FilesChanged="OnFilesChangedAsync" Accept="image/*" MaxFiles="1">
+                        <MudHidden Breakpoint="Breakpoint.SmAndUp">
+                            <InputFile id="camera-upload" accept="image/*,video/*" capture="environment" OnChange="OnCameraFilesChangedAsync" style="display:none;" />
+                            <MudButton HtmlTag="label" for="camera-upload" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CameraAlt" FullWidth="true" Class="mb-3">
+                                @Loc["TakePhoto"]
+                            </MudButton>
+                        </MudHidden>
+
+                        <MudFileUpload T="IBrowserFile" FilesChanged="OnFilesChangedAsync" Accept="image/*,video/*" MaxFiles="1">
                             <ActivatorContent>
-                                <MudPaper Class="pa-6 d-flex flex-column align-center justify-center" Style="border:2px dashed var(--mud-palette-lines-default); min-height: 140px;">
+                                <MudPaper Class="pa-6 d-flex flex-column align-center justify-center" Style="border:2px dashed var(--mud-palette-lines-default); min-height: 250px;">
                                     <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Class="mb-2" />
-                                    <MudText Typo="Typo.body1">Drag &amp; drop photo here, or click to select</MudText>
+                                    <MudText Typo="Typo.body1">@Loc["DragDropPhoto"]</MudText>
                                     @if (!string.IsNullOrWhiteSpace(_selectedFileName))
                                     {
-                                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-2">Selected: @_selectedFileName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-2">@Loc["Selected"] @_selectedFileName</MudText>
                                     }
                                 </MudPaper>
                             </ActivatorContent>
@@ -51,68 +61,72 @@
                         }
                     </MudItem>
 
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">@Loc["MapLocation"]</MudText>
+                        <div id="picker-map" style="height: 250px; width: 100%; border-radius: 8px; border: 1px solid var(--mud-palette-lines-default); z-index: 1;"></div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2 text-center d-block">
+                            @Loc["MapHelp"]
+                        </MudText>
+                    </MudItem>
+
                     <MudItem xs="12" sm="6">
-                        <MudTextField Label="Latitude" Variant="Variant.Outlined"
+                        <MudTextField Label="@Loc["Latitude"]" Variant="Variant.Outlined"
                                       @bind-Value="_model.Latitude"
                                       Disabled=false />
                     </MudItem>
 
                     <MudItem xs="12" sm="6">
-                        <MudTextField Label="Longitude" Variant="Variant.Outlined"
+                        <MudTextField Label="@Loc["Longitude"]" Variant="Variant.Outlined"
                                       @bind-Value="_model.LongTitude"
                                       Disabled=false />
                     </MudItem>
 
-                    @if (!_exifFound)
-                    {
-                        <MudItem xs="12">
-                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                                GPS location was not found in the photo. Please fill in location fields below.
-                            </MudAlert>
-                        </MudItem>
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            @Loc["GpsAlert"]
+                        </MudAlert>
+                    </MudItem>
 
-                        <MudItem xs="12" sm="4">
-                            <MudTextField Label="City" Variant="Variant.Outlined" @bind-Value="_mesto" Required="true" RequiredError="City is required" />
-                        </MudItem>
-                        <MudItem xs="12" sm="4">
-                            <MudTextField Label="Okres" Variant="Variant.Outlined" @bind-Value="_okres" />
-                        </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField Label="@Loc["City"]" Variant="Variant.Outlined" Value="_mesto" ValueChanged="@((string s) => OnCityChanged(s))" Required="true" RequiredError="@Loc["CityRequired"]" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField Label="@Loc["District"]" Variant="Variant.Outlined" @bind-Value="_okres" />
+                    </MudItem>
 
-                        <MudItem xs="12" sm="4">
-                            <MudTextField Label="Obec" Variant="Variant.Outlined" @bind-Value="_obec" />
-                        </MudItem>
-
-                    }
+                    <MudItem xs="12" sm="4">
+                        <MudTextField Label="@Loc["Region"]" Variant="Variant.Outlined" @bind-Value="_obec" />
+                    </MudItem>
 
                     <MudItem xs="12" sm="6">
-                        <MudSelect T="PotholeCategory" Label="Category" Variant="Variant.Outlined"
-                                   @bind-Value="_model.Category" Required="true" RequiredError="Category is required">
+                        <MudSelect T="PotholeCategory" Label="@Loc["Category"]" Variant="Variant.Outlined"
+                                   @bind-Value="_model.Category" Required="true" RequiredError="@Loc["CategoryRequired"]">
                             @foreach (var cat in Enum.GetValues<PotholeCategory>())
                             {
-                                <MudSelectItem T="PotholeCategory" Value="cat">@cat</MudSelectItem>
+                                <MudSelectItem T="PotholeCategory" Value="cat">@Loc[cat.ToString()]</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
 
                     <MudItem xs="12" sm="6">
-                        <MudSelect T="ReportStatus" Label="Status" Variant="Variant.Outlined"
+                        <MudSelect T="ReportStatus" Label="@Loc["Status"]" Variant="Variant.Outlined"
                                    @bind-Value="_model.Status" Disabled="true">
                             @foreach (var st in Enum.GetValues<ReportStatus>())
                             {
-                                <MudSelectItem T="ReportStatus" Value="st">@st</MudSelectItem>
+                                <MudSelectItem T="ReportStatus" Value="st">@Loc[st.ToString()]</MudSelectItem>
                             }
                         </MudSelect>
                         <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-1">
-                            Status is set automatically for new reports.
+                            @Loc["StatusAuto"]
                         </MudText>
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField Label="Description" Variant="Variant.Outlined" Lines="4"
+                        <MudTextField Label="@Loc["Description"]" Variant="Variant.Outlined" Lines="4"
                                       @bind-Value="_model.Description" />
                     </MudItem>
 
-                    <MudItem xs="12">
+                    @* <MudItem xs="12">
                         <MudDivider Class="my-2" />
                         <MudText Typo="Typo.subtitle1" Class="mb-2">Photo metadata</MudText>
 
@@ -125,11 +139,11 @@
                         <MudTextField Label="Size (bytes)" Variant="Variant.Outlined" Disabled="true"
                                       @bind-Value="_imageSizeBytes" Class="mt-3" />
 
-                    </MudItem>
+                    </MudItem> *@
 
                     <MudItem xs="12" Class="d-flex justify-end gap-2">
-                        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => ResetAsync())">Reset</MudButton>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAsync">Submit</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => ResetAsync())">@Loc["Reset"]</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAsync">@Loc["Submit"]</MudButton>
                     </MudItem>
 
                 </MudGrid>
@@ -169,6 +183,105 @@
         set => _model.Image.SizeBytes = value;
     }
 
+    private DotNetObjectReference<CreateReport>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("initPickerMap", "picker-map", _objRef, null, null);
+        }
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+    }
+
+    [JSInvokable]
+    public async Task UpdateLocation(double lat, double lng)
+    {
+        _model.Latitude = lat;
+        _model.LongTitude = lng;
+        
+        await ReverseGeocodeAsync(lat, lng);
+        StateHasChanged();
+    }
+
+    private async Task ReverseGeocodeAsync(double lat, double lng)
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "PotholeReportingSystem/1.0");
+            var url = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat.ToString(System.Globalization.CultureInfo.InvariantCulture)}&lon={lng.ToString(System.Globalization.CultureInfo.InvariantCulture)}&zoom=10&addressdetails=1";
+            
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var doc = JsonDocument.Parse(content);
+                if (doc.RootElement.TryGetProperty("address", out var address))
+                {
+                    if (address.TryGetProperty("city", out var city) || address.TryGetProperty("town", out city) || address.TryGetProperty("village", out city) || address.TryGetProperty("municipality", out city))
+                        _mesto = city.GetString() ?? "";
+
+                    if (address.TryGetProperty("county", out var county))
+                        _okres = county.GetString()?.Replace("okres ", "").Replace("District", "").Trim() ?? "";
+
+                    if (address.TryGetProperty("state", out var state) || address.TryGetProperty("region", out state))
+                        _obec = state.GetString()?.Replace("kraj", "").Replace("Region", "").Trim() ?? "";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Geocoding failed: {ex.Message}");
+        }
+    }
+
+    private async Task OnCityChanged(string newCity)
+    {
+        _mesto = newCity;
+        await GeocodeCityAsync();
+    }
+
+    private async Task GeocodeCityAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_mesto)) return;
+        
+        try
+        {
+            var client = HttpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "PotholeReportingSystem/1.0");
+            var url = $"https://nominatim.openstreetmap.org/search?format=json&city={Uri.EscapeDataString(_mesto)}&countrycodes=sk";
+            
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(content);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
+                {
+                    var firstResult = doc.RootElement[0];
+                    if (double.TryParse(firstResult.GetProperty("lat").GetString(), System.Globalization.CultureInfo.InvariantCulture, out double lat) &&
+                        double.TryParse(firstResult.GetProperty("lon").GetString(), System.Globalization.CultureInfo.InvariantCulture, out double lon))
+                    {
+                        _model.Latitude = lat;
+                        _model.LongTitude = lon;
+                        await JSRuntime.InvokeVoidAsync("updatePickerMapPosition", lat, lon);
+                        await ReverseGeocodeAsync(lat, lon);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Forward geocoding failed: {ex.Message}");
+        }
+    }
+
     private async Task SubmitAsync()
     {
         Console.WriteLine("SubmitAsync execution started.");
@@ -181,9 +294,9 @@
 
         if (_photo is null)
         {
-            _photoError = "Photo is required.";
+            _photoError = Loc["PhotoRequired"].Value;
             Console.WriteLine("SubmitAsync: Photo is null.");
-            Snackbar.Add("Photo is required.", Severity.Warning);
+            Snackbar.Add(Loc["PhotoRequired"].Value, Severity.Warning);
             return;
         }
 
@@ -195,17 +308,19 @@
             {
                Console.WriteLine($"Validation Error: {err}");
             }
-            Snackbar.Add("Please correct the errors in the form.", Severity.Warning);
+            Snackbar.Add(Loc["SubmitErrorForm"].Value, Severity.Warning);
             return;
         }
 
-        if (!_exifFound)
+        if (string.IsNullOrWhiteSpace(_mesto))
         {
-            if (string.IsNullOrWhiteSpace(_mesto))
-                return;
-            
-            _model.District = _okres;
+            Snackbar.Add("City is required.", Severity.Warning);
+            return;
         }
+        
+        _model.City = _mesto;
+        _model.District = _okres;
+        _model.Region = _obec;
 
         var authState = AuthenticationStateTask is null ? null : await AuthenticationStateTask;
         var userId = authState?.User?.FindFirst("sub")?.Value
@@ -213,7 +328,7 @@
 
         if (string.IsNullOrWhiteSpace(userId))
         {
-            Snackbar.Add("Unable to identify user. Please try logging in again.", Severity.Error);
+            Snackbar.Add(Loc["LoginRequired"].Value, Severity.Error);
             Console.WriteLine("SubmitAsync: UserID is missing.");
             return;
         }
@@ -229,18 +344,18 @@
             var fileClient = HttpClientFactory.CreateClient("FileService");
             using var content = new MultipartFormDataContent();
 
-            using var fileStream = _photo.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);// Up to 10MB
+            using var fileStream = _photo.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);// Up to 20MB
             using var streamContent = new StreamContent(fileStream);
             streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(_photo.ContentType);
             content.Add(streamContent, "file", _photo.Name);
 
             Console.WriteLine("Uploading file to FileService...");
-            var uploadResponse = await fileClient.PostAsync("Files/upload", content);
+            var uploadResponse = await fileClient.PostAsync("api/files/upload", content);
             if (!uploadResponse.IsSuccessStatusCode)
             {
                 var error = await uploadResponse.Content.ReadAsStringAsync();
-                _photoError = $"Upload failed: {uploadResponse.ReasonPhrase} - {error}";
-                Snackbar.Add($"Upload failed: {uploadResponse.ReasonPhrase}", Severity.Error);
+                _photoError = $"{Loc["UploadError"].Value} {uploadResponse.ReasonPhrase} - {error}";
+                Snackbar.Add($"{Loc["UploadError"].Value} {uploadResponse.ReasonPhrase}", Severity.Error);
                 Console.WriteLine($"FileService failed: {uploadResponse.StatusCode} - {error}");
                 return;
             }
@@ -259,12 +374,12 @@
 
             Console.WriteLine("Sending report to ReportService...");
             var reportClient = HttpClientFactory.CreateClient("ReportService");
-            var reportResponse = await reportClient.PostAsJsonAsync("Reports", _model);
+            var reportResponse = await reportClient.PostAsJsonAsync("api/reports", _model);
 
             if (reportResponse.IsSuccessStatusCode)
             {
                 Console.WriteLine("Report submitted successfully.");
-                Snackbar.Add("Report submitted successfully!", Severity.Success);
+                Snackbar.Add(Loc["SubmitSuccess"].Value, Severity.Success);
                 await ResetAsync();
             }
             else
@@ -315,6 +430,14 @@
         return Task.CompletedTask;
     }
 
+    private async Task OnCameraFilesChangedAsync(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            await OnFilesChangedAsync(e.File);
+        }
+    }
+
     private async Task OnFilesChangedAsync(IBrowserFile file)
     {
         _photoError = null;
@@ -334,18 +457,29 @@
         _model.Image.ContentType = file.ContentType;
         _model.Image.SizeBytes = file.Size;
 
-        var gps = await TryExtractGpsAsync(file);
-        if (gps is not null)
+        if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
         {
-            _exifFound = true;
-            _model.Latitude = gps.Value.Lat;
-            _model.LongTitude = gps.Value.Lon;
-            _exifStatus = $"GPS extracted from photo: {_model.Latitude:F6}, {_model.LongTitude:F6}";
+            var gps = await TryExtractGpsAsync(file);
+            if (gps is not null)
+            {
+                _exifFound = true;
+                _model.Latitude = gps.Value.Lat;
+                _model.LongTitude = gps.Value.Lon;
+                _exifStatus = $"{Loc["ExifLocationFound"].Value} {_model.Latitude:F6}, {_model.LongTitude:F6}";
+
+                await JSRuntime.InvokeVoidAsync("updatePickerMapPosition", _model.Latitude, _model.LongTitude);
+                await ReverseGeocodeAsync(_model.Latitude, _model.LongTitude);
+            }
+            else
+            {
+                _exifFound = false;
+                _exifStatus = Loc["ExifLocationNotFound"].Value;
+            }
         }
         else
         {
             _exifFound = false;
-            _exifStatus = "No GPS EXIF data found.";
+            _exifStatus = "Selected file is a video, skipping GPS extraction.";
         }
     }
 
@@ -363,16 +497,13 @@
             {
                 var toRead = (int)Math.Min(buffer.Length, maxRead - total);
                 var read = await stream.ReadAsync(buffer.AsMemory(0, toRead));
-                if (read <= 0)
-                    break;
+                if (read <= 0) break;
                 await ms.WriteAsync(buffer.AsMemory(0, read));
                 total += read;
             }
 
-            var data = ms.ToArray();
-
-            // Supports common JPEG EXIF with GPS IFD.
-            return ExifGpsParser.TryGetGps(data);
+            var gps = ExifGpsParser.TryGetGps(ms.ToArray());
+            return gps;
         }
         catch
         {

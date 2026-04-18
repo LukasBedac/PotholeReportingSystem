@@ -9,12 +9,12 @@
 @inject NavigationManager NavManager
 @attribute [Authorize]
 
-<PageTitle>Map View</PageTitle>
+<PageTitle>@Loc["MapView"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4" Style="height: 85vh; display: flex; flex-direction: column;">
-    <MudPaper Elevation="2" Class="pa-4 flex-grow-1 d-flex flex-column">
+    <MudPaper Elevation="2" Class="pa-4 flex-grow-1 d-flex flex-column" Style="overflow: hidden;">
         <div class="d-flex justify-space-between align-center mb-4">
-            <MudText Typo="Typo.h5">Reports Map</MudText>
+            <MudText Typo="Typo.h5">@Loc["ReportsMap"]</MudText>
             <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.Info">Showing @(_reports?.Count ?? 0) reports</MudChip>
         </div>
 
@@ -23,9 +23,53 @@
             <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
         }
         
-        <div id="map" style="width: 100%; flex-grow: 1; min-height: 500px; border-radius: 8px; z-index: 1;"></div>
+        <MudGrid Style="flex-grow: 1; overflow: hidden; margin: 0; width: 100%;" Spacing="2">
+            <MudItem xs="12" md="4" lg="3" Style="height: 100%; overflow-y: auto; padding-right: 8px;">
+                @if (_reports != null)
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var r in _reports)
+                        {
+                            <MudPaper Class="pa-3 rounded-lg d-flex align-center" Elevation="1" Style="width: 100%; overflow: hidden;">
+                                <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                                    <div class="d-flex align-center gap-2 mb-1">
+                                        <MudText Typo="Typo.subtitle2" Style="font-weight:bold;" Class="text-truncate">@r.Category</MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(r.Status)" Variant="Variant.Text" Class="flex-shrink-0">@r.Status</MudChip>
+                                    </div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1 d-block clamp-text-2">
+                                        @(string.IsNullOrWhiteSpace(r.Description) ? "No description" : r.Description)
+                                    </MudText>
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1 flex-shrink-0" Color="Color.Secondary" />
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-truncate">
+                                            @(r.City ?? "Unknown"), @r.Latitude.ToString("F3"), @r.LongTitude.ToString("F3")
+                                        </MudText>
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <MudIconButton Icon="@Icons.Material.Filled.MyLocation" Color="Color.Primary" Size="Size.Medium" OnClick="@(() => FocusMap(r.Latitude, r.LongTitude))" Title="Show on map" />
+                                </div>
+                            </MudPaper>
+                        }
+                    </div>
+                }
+            </MudItem>
+            
+            <MudItem xs="12" md="8" lg="9" Style="height: 100%; padding: 0;">
+                <div id="map" style="width: 100%; height: 100%; border-radius: 8px; z-index: 1;"></div>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
 </MudContainer>
+
+<style>
+    .clamp-text-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
 
 @code {
     private bool _loading = true;
@@ -34,6 +78,8 @@
     private double? _initLat;
     private double? _initLng;
     private int? _initZoom;
+
+    //https://ofmozaika.tiles.freemap.sk/{z}/{x}/{y}.jpg
 
     protected override void OnInitialized()
     {
@@ -64,7 +110,7 @@
         try
         {
             var client = HttpClientFactory.CreateClient("ReportService");
-            _reports = await client.GetFromJsonAsync<List<Report>>("Reports");
+            _reports = await client.GetFromJsonAsync<List<Report>>("api/Reports");
 
             if (_reports != null)
             {
@@ -98,8 +144,24 @@
     {
         if (report.Image != null && !string.IsNullOrEmpty(report.Image.StorageKey))
         {
-            return $"http://localhost:8085/Files/view/{report.Image.BucketName}/{report.Image.StorageKey}";
+            return $"/api/files/view/{report.Image.BucketName}/{report.Image.StorageKey}";
         }
         return "";
     }
+
+    private async Task FocusMap(double lat, double lng)
+    {
+        await JSRuntime.InvokeVoidAsync("focusMap", lat, lng);
+    }
+
+    private Color GetStatusColor(GUIApps.Shared.Models.Enums.ReportStatus status) => status switch
+    {
+        GUIApps.Shared.Models.Enums.ReportStatus.Reported => Color.Info,
+        GUIApps.Shared.Models.Enums.ReportStatus.UnderReview => Color.Warning,
+        GUIApps.Shared.Models.Enums.ReportStatus.Inprogress => Color.Primary,
+        GUIApps.Shared.Models.Enums.ReportStatus.Repaired => Color.Success,
+        GUIApps.Shared.Models.Enums.ReportStatus.Rejected => Color.Error,
+        GUIApps.Shared.Models.Enums.ReportStatus.CannotBeRepaired => Color.Dark,
+        _ => Color.Default
+    };
 }

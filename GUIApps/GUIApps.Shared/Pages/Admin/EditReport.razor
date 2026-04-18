@@ -1,4 +1,5 @@
 ﻿@page "/admin/edit-report/{Id:guid}"
+@page "/edit-report/{Id:guid}"
 @using GUIApps.Shared.Models
 @using GUIApps.Shared.Models.Enums
 @using Microsoft.AspNetCore.Authorization
@@ -8,13 +9,16 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
 
-@attribute [Authorize(Roles = "admin")]
+@attribute [Authorize]
+@implements IDisposable
 
-<PageTitle>Edit Report</PageTitle>
+<PageTitle>@Loc["Edit Reports"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
-    <MudText Typo="Typo.h4" Class="mb-4">Edit Report</MudText>
+    <MudText Typo="Typo.h4" Class="mb-4">@Loc["EditReports"]</MudText>
 
     @if (_loading)
     {
@@ -31,19 +35,19 @@
                 <MudForm @ref="_form">
                     <MudGrid>
                         <MudItem xs="12">
-                            <MudTextField Label="Report ID" Value="@_report.Id" ReadOnly="true" Variant="Variant.Filled" />
+                            <MudTextField Label="@Loc["Report ID"]" Value="@_report.Id" ReadOnly="true" Variant="Variant.Filled" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField Label="User ID" Value="@_report.UserID" ReadOnly="true" Variant="Variant.Filled" />
+                            <MudTextField Label="@Loc["User ID"]" Value="@_report.UserID" ReadOnly="true" Variant="Variant.Filled" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField Label="Reported At" Value="@_report.ReportedAt.ToLocalTime().ToString("g")" ReadOnly="true" Variant="Variant.Filled" />
+                            <MudTextField Label="@Loc["Reported"]" Value="@_report.ReportedAt.ToLocalTime().ToString("g")" ReadOnly="true" Variant="Variant.Filled" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                             <MudSelect T="ReportStatus" Label="Status" @bind-Value="_report.Status" Variant="Variant.Outlined" Required="true">
+                             <MudSelect T="ReportStatus" Label="Status" @bind-Value="_report.Status" Variant="Variant.Outlined" Required="true" Disabled="@(!_isAdmin)">
                                 @foreach (var status in Enum.GetValues<ReportStatus>())
                                 {
                                     <MudSelectItem Value="@status">@status</MudSelectItem>
@@ -64,18 +68,40 @@
                             <MudTextField Label="Description" @bind-Value="_report.Description" Lines="4" Variant="Variant.Outlined" />
                         </MudItem>
 
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Map Location</MudText>
+                            <div id="picker-map" style="height: 250px; width: 100%; border-radius: 8px; border: 1px solid var(--mud-palette-lines-default); z-index: 1;"></div>
+                            <div class="d-flex justify-space-between align-center mt-2">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Drag the pin or click on the map to manually set the exact location.
+                                </MudText>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="RevertLocationAsync">Revert Position</MudButton>
+                            </div>
+                        </MudItem>
+
                         <MudItem xs="12" sm="6">
-                            <MudTextField Label="Latitude" Value="@_report.Latitude" ReadOnly="true" Variant="Variant.Filled" />
+                            <MudTextField Label="Latitude" @bind-Value="_report.Latitude" ReadOnly="false" Variant="Variant.Filled" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudTextField Label="Longitude" Value="@_report.LongTitude" ReadOnly="true" Variant="Variant.Filled" />
+                            <MudTextField Label="Longitude" @bind-Value="_report.LongTitude" ReadOnly="false" Variant="Variant.Filled" />
                         </MudItem>
 
                         @if (_report.Image != null && !string.IsNullOrEmpty(_report.Image.StorageKey))
                         {
                             <MudItem xs="12">
-                                <MudText Typo="Typo.subtitle1">Attached Image</MudText>
-                                <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.Image">@_report.Image.OriginalName</MudChip>
+                                <MudText Typo="Typo.subtitle1">Attached Media</MudText>
+                                @if (_report.Image.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <MudImage Src="@($"/api/files/view/{_report.Image.BucketName}/{_report.Image.StorageKey}")" Alt="Attached Photo" Elevation="2" Class="rounded-lg mb-2" Style="max-width: 100%; max-height: 400px; display: block;" ObjectFit="ObjectFit.Contain" />
+                                }
+                                else if (_report.Image.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <video controls style="max-width: 100%; max-height: 400px; display: block;" class="rounded-lg mb-2">
+                                        <source src="@($"/api/files/view/{_report.Image.BucketName}/{_report.Image.StorageKey}")" type="@_report.Image.ContentType" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                }
+                                <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.Attachment">@_report.Image.OriginalName</MudChip>
                                 <MudText Typo="Typo.caption">Size: @(_report.Image.SizeBytes / 1024) KB</MudText>
                             </MudItem>
                         }
@@ -97,10 +123,60 @@
     private Report? _report;
     private bool _loading = true;
     private MudForm? _form;
+    private bool _isAdmin = false;
+
+    private double _originalLat;
+    private double _originalLng;
+    private bool _mapInitialized = false;
+    private DotNetObjectReference<EditReport>? _objRef;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _isAdmin = authState.User.IsInRole("admin");
         await LoadReportAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+        }
+
+        if (!_loading && _report != null && !_mapInitialized)
+        {
+            _mapInitialized = true;
+            await JSRuntime.InvokeVoidAsync("initPickerMap", "picker-map", _objRef, _report.Latitude, _report.LongTitude);
+        }
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+    }
+
+    [JSInvokable]
+    public Task UpdateLocation(double lat, double lng)
+    {
+        if (_report != null)
+        {
+            _report.Latitude = lat;
+            _report.LongTitude = lng;
+            StateHasChanged();
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task RevertLocationAsync()
+    {
+        if (_report != null)
+        {
+            _report.Latitude = _originalLat;
+            _report.LongTitude = _originalLng;
+            await JSRuntime.InvokeVoidAsync("updatePickerMapPosition", _originalLat, _originalLng);
+            StateHasChanged();
+        }
     }
 
     private async Task LoadReportAsync()
@@ -109,7 +185,12 @@
         try
         {
             var client = HttpClientFactory.CreateClient("ReportService");
-            _report = await client.GetFromJsonAsync<Report>($"Reports/{Id}");
+            _report = await client.GetFromJsonAsync<Report>($"api/Reports/{Id}");
+            if (_report != null)
+            {
+                _originalLat = _report.Latitude;
+                _originalLng = _report.LongTitude;
+            }
         }
         catch (Exception ex)
         {
@@ -134,12 +215,15 @@
         try
         {
             var client = HttpClientFactory.CreateClient("ReportService");
-            var response = await client.PutAsJsonAsync($"Reports/{Id}", _report);
+            var response = await client.PutAsJsonAsync($"api/Reports/{Id}", _report);
 
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add("Report updated successfully", Severity.Success);
-                NavigationManager.NavigateTo("/admin/manage-reports");
+                if (_isAdmin)
+                    NavigationManager.NavigateTo("/admin/manage-reports");
+                else
+                    NavigationManager.NavigateTo("/myreports");
             }
             else
             {
@@ -155,6 +239,9 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/admin/manage-reports");
+        if (_isAdmin)
+            NavigationManager.NavigateTo("/admin/manage-reports");
+        else
+            NavigationManager.NavigateTo("/myreports");
     }
 }

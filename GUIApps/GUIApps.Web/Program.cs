@@ -7,9 +7,21 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http.Headers;
+using Yarp.ReverseProxy.Transforms;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Increase max upload size to support videos
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 20971520; // 20 MB
+});
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 20971520; // 20 MB
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -42,7 +54,7 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = false; // Only for local dev
     options.ResponseType = "code";
     options.SaveTokens = true;
-    options.GetClaimsFromUserInfoEndpoint = true;
+    options.GetClaimsFromUserInfoEndpoint = false;
 
     options.Scope.Clear();
     options.Scope.Add("openid");
@@ -62,6 +74,22 @@ builder.Services.AddAuthentication(options =>
             var request = context.Request;
             var host = request.Host;
             // Console.WriteLine($"[OIDC] Redirect URI being constructed for host: {host}");
+
+            // Rewrite the redirect URL from internal Docker DNS to localhost so the browser can reach it
+            if (context.ProtocolMessage.IssuerAddress.Contains("keycloak:8080"))
+            {
+                context.ProtocolMessage.IssuerAddress = context.ProtocolMessage.IssuerAddress.Replace("keycloak:8080", "localhost:8080");
+            }
+
+            return Task.CompletedTask;
+        },
+        OnRedirectToIdentityProviderForSignOut = context =>
+        {
+            // Fix the logout redirect: when browser needs to go to Keycloak to kill the session
+            if (context.ProtocolMessage.IssuerAddress != null && context.ProtocolMessage.IssuerAddress.Contains("keycloak:8080"))
+            {
+                context.ProtocolMessage.IssuerAddress = context.ProtocolMessage.IssuerAddress.Replace("keycloak:8080", "localhost:8080");
+            }
             return Task.CompletedTask;
         }
     };
@@ -94,8 +122,32 @@ builder.Services.AddHttpClient("AdminService", client =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(builderContext =>
+    {
+        builderContext.AddRequestTransform(async transformContext =>
+        {
+            var accessToken = await transformContext.HttpContext.GetTokenAsync("access_token");
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                transformContext.ProxyRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            }
+        });
+    });
+
 builder.Services.AddMudServices();
+builder.Services.AddLocalization();
+
 var app = builder.Build();
+
+var supportedCultures = new[] { "en-US", "sk-SK" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -122,6 +174,7 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapReverseProxy();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
