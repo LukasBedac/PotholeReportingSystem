@@ -16,5 +16,13 @@
     <None Include=".dockerignore" />
     <None Include="Infra\mock_data.sql" />
     <None Include="Infra\mock_data_v2.sql" />
+    <None Include="Tests\Application.Tests\AdminAssignedConsumerTests.cs" />
+    <None Include="Tests\Application.Tests\ReportsControllerTests.cs" />
+    <None Include="Tests\GUIApps.Tests\CreateReportTests.cs" />
+    <None Include="Tests\GUIApps.Tests\ExifGpsParserTests.cs" />
+    <None Include="Tests\GUIApps.Tests\KeycloakRolesClaimsTransformationTests.cs" />
+    <None Include="Tests\GUIApps.Tests\MapViewTests.cs" />
+    <None Include="Tests\GUIApps.Tests\NotAuthorizedTests.cs" />
+    <None Include="Tests\Integration.Tests\ReportServiceIntegrationTest.cs" />
   </ItemGroup>
 </Project>

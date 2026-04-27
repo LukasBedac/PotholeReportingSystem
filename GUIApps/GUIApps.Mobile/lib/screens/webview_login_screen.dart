@@ -57,9 +57,7 @@ class _WebViewLoginScreenState extends State<WebViewLoginScreen> {
       try {
         await authService.exchangeCodeForToken(code);
         if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => ProfileScreen()),
-        );
+        Navigator.of(context).pop();
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

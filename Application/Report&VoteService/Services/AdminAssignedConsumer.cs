@@ -60,7 +60,7 @@ namespace ReportVoteService.Services
             consumer.Close();
         }
 
-        private async Task UpdateReportAdminAsync(AdminAssignedEvent msg)
+        public async Task UpdateReportAdminAsync(AdminAssignedEvent msg)
         {
             using var scope = _serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ReportsVoteDbContext>();

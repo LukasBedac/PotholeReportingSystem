@@ -51,7 +51,12 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
       }
 
       final uri = Uri.parse('http://10.0.2.2:8081/api/reports/user/$userId');
-      final response = await http.get(uri);
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer ${auth.accessToken}',
+        },
+      );
 
       if (response.statusCode == 200) {
         if (mounted) {
@@ -100,9 +105,17 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
     if (confirm != true) return;
 
+    final auth = Provider.of<AuthService>(context, listen: false);
+    if (auth.accessToken == null) return;
+
     try {
       final uri = Uri.parse('http://10.0.2.2:8081/api/reports/$id');
-      final response = await http.delete(uri);
+      final response = await http.delete(
+        uri,
+        headers: {
+          'Authorization': 'Bearer ${auth.accessToken}',
+        },
+      );
 
       if (response.statusCode == 204 || response.statusCode == 200) {
         if (mounted) {

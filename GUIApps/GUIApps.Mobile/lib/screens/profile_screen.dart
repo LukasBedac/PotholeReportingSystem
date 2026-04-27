@@ -42,22 +42,22 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 30),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CreateReportScreen()),
-                  );
-                },
-                icon: const Icon(Icons.assignment),
-                label: const Text('Create Report (Guest)'),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: const TextStyle(fontSize: 18),
-                ),
-              ),
+              // ElevatedButton.icon(
+              //   onPressed: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => CreateReportScreen()),
+              //     );
+              //   },
+              //   icon: const Icon(Icons.assignment),
+              //   label: const Text('Create Report (Guest)'),
+              //   style: ElevatedButton.styleFrom(
+              //     padding:
+              //         const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              //     textStyle: const TextStyle(fontSize: 18),
+              //   ),
+              // ),
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: () {
